@@ -29,8 +29,8 @@ public class DuyuruController : ControllerBase
     [Authorize(Roles = "IkYonetici")]
     public async Task<IActionResult> Add([FromBody] DuyuruOlusturDto dto)
     {
-        await duyuruServis.AddAsync(dto);
-        return Created();
+        DuyuruDto created = await duyuruServis.AddAsync(dto);
+        return Created("", created);
     }
 
     [HttpDelete("{id}")]

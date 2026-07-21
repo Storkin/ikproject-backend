@@ -27,13 +27,14 @@ public class DuyuruService : IDuyuruService
         return sonucListesi;
     }
 
-    public async Task AddAsync(DuyuruOlusturDto dto)
+    public async Task <DuyuruDto> AddAsync(DuyuruOlusturDto dto)
     {
         Duyuru yeniDuyuru = new Duyuru();
         yeniDuyuru.Baslik = dto.Baslik;
         yeniDuyuru.Icerik = dto.Icerik;
 
         await duyuruDepo.AddAsync(yeniDuyuru);
+        return DuyurudanDtoYap(yeniDuyuru);
     }
 
 

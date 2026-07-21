@@ -87,9 +87,9 @@ public class IzinService : IIzinService
 
     public async Task<(bool basarili, string mesaj)> TalepOlusturAsync(int personelId, IzinTalepOlusturDto dto)
     {
-        if (dto.BitisTarihi <= dto.BaslangicTarihi)
+        if (dto.BitisTarihi < dto.BaslangicTarihi)
         {
-            return (false, "Bitiş tarihi başlangıç tarihinden sonra olmalı.");
+            return (false, "Bitiş tarihi başlangıç tarihinden önce olamaz.");
         }
 
         Personel personel = await personelDepo.GetByIdAsync(personelId);
