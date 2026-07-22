@@ -4,6 +4,6 @@ namespace IkProjesi.Services;
 
 public interface IAuthService
 {
-    Task<string?> RegisterAsync(RegisterDto dto);
-    Task<string?> LoginAsync(LoginDto dto);
+    Task<TokenResponseDto?> RegisterAsync(RegisterDto dto);
+    Task<TokenResponseDto?> LoginAsync(LoginDto dto);
 }

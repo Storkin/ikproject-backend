@@ -14,7 +14,15 @@ public class LoginDto
     public string Password { get; set; } = string.Empty;
 }
 
+public class UserDto
+{
+    public string Email { get; set; } = string.Empty;
+    public string Rol { get; set; } = string.Empty;
+    public int? PersonelId { get; set; }
+}
+
 public class TokenResponseDto
 {
     public string Token { get; set; } = string.Empty;
+    public UserDto User { get; set; } = new UserDto();
 }

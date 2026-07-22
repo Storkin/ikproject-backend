@@ -19,7 +19,7 @@ public class AuthService : IAuthService
         ayarlar = config;
     }
 
-    public async Task<string?> RegisterAsync(RegisterDto dto)
+    public async Task<TokenResponseDto?> RegisterAsync(RegisterDto dto)
     {
         User mevcutKullanici = await kullaniciDepo.GetByEmailAsync(dto.Email);
         if (mevcutKullanici != null)
@@ -54,11 +54,10 @@ public class AuthService : IAuthService
 
         await kullaniciDepo.AddAsync(yeniKullanici);
 
-        string token = TokenUret(yeniKullanici);
-        return token;
+        return YanitYap(yeniKullanici);
     }
 
-    public async Task<string?> LoginAsync(LoginDto dto)
+    public async Task<TokenResponseDto?> LoginAsync(LoginDto dto)
     {
 
         User bulunanKullanici = await kullaniciDepo.GetByEmailAsync(dto.Email);
@@ -73,8 +72,26 @@ public class AuthService : IAuthService
             return null;
         }
 
-        string token = TokenUret(bulunanKullanici);
-        return token;
+        return YanitYap(bulunanKullanici);
+    }
+
+    private TokenResponseDto YanitYap(User kullanici)
+    {
+        string token = TokenUret(kullanici);
+
+        UserDto userDto = new UserDto();
+        userDto.Email = kullanici.Email;
+        userDto.Rol = kullanici.Rol;
+        if (kullanici is Calisan)
+        {
+            Calisan calisan = (Calisan)kullanici;
+            userDto.PersonelId = calisan.PersonelId;
+        }
+
+        TokenResponseDto yanit = new TokenResponseDto();
+        yanit.Token = token;
+        yanit.User = userDto;
+        return yanit;
     }
 
     private string TokenUret(User kullanici)
@@ -99,7 +116,7 @@ public class AuthService : IAuthService
             issuer: ayarlar["Jwt:Issuer"],
             audience: ayarlar["Jwt:Audience"],
             claims: claimListesi,
-            expires: DateTime.UtcNow.AddHours(8),
+            expires: DateTime.UtcNow.AddHours(int.Parse(ayarlar["Jwt:ExpireHours"])),
             signingCredentials: imzaAyarlari
         );
 

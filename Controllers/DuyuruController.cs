@@ -33,6 +33,18 @@ public class DuyuruController : ControllerBase
         return Created("", created);
     }
 
+    [HttpPut("{id}")]
+    [Authorize(Roles = "IkYonetici")]
+    public async Task<IActionResult> Update(int id, [FromBody] DuyuruUpdateDto dto)
+    {
+        DuyuruDto? updated = await duyuruServis.UpdateAsync(id, dto);
+        if (updated == null)
+        {
+            return NotFound();
+        }
+        return Ok(updated);
+    }
+
     [HttpDelete("{id}")]
     [Authorize(Roles = "IkYonetici")]
     public async Task<IActionResult> Delete(int id)

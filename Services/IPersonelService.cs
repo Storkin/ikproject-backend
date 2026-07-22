@@ -10,8 +10,8 @@ public interface IPersonelService
     Task<PersonelDto?> GetByIdAsync(int id);
     Task<PersonelDto?> GetByEmailAsync(string email);
     Task<List<PersonelDto>> AraAsync(string kelime);
-    Task AddAsync(PersonelCreateDto dto);
-    Task<bool> UpdateAsync(int id, PersonelUpdateDto dto);
+    Task<PersonelDto> AddAsync(PersonelCreateDto dto);
+    Task<PersonelDto?> UpdateAsync(int id, PersonelUpdateDto dto);
     Task<bool> UpdateEmailAsync(int id, CalisanEmailUpdateDto dto);
     Task<bool> DeleteAsync(int id);
 }

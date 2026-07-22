@@ -7,10 +7,12 @@ namespace IkProjesi.Services;
 public class PersonelService : IPersonelService
 {
     private readonly IPersonelRepository depo;
+    private readonly IConfiguration ayarlar;
 
-    public PersonelService(IPersonelRepository repository)
+    public PersonelService(IPersonelRepository repository, IConfiguration config)
     {
         depo = repository;
+        ayarlar = config;
     }
 
     public async Task<List<PersonelDto>> GetAllAsync()
@@ -95,7 +97,7 @@ public class PersonelService : IPersonelService
         return dto;
     }
 
-    public async Task AddAsync(PersonelCreateDto dto)
+    public async Task<PersonelDto> AddAsync(PersonelCreateDto dto)
     {
         Personel yeniPersonel = new Personel();
         yeniPersonel.Ad = dto.Ad;
@@ -104,17 +106,21 @@ public class PersonelService : IPersonelService
         yeniPersonel.Maas = dto.Maas;
         yeniPersonel.IseBaslamaTarihi = dto.IseBaslamaTarihi;
         yeniPersonel.Email = dto.Email;
+        yeniPersonel.YillikIzinHakki = int.Parse(ayarlar["PersonelAyarlari:VarsayilanIzinHakki"]);
 
         await depo.AddAsync(yeniPersonel);
+
+        PersonelDto sonuc = PersoneldenDtoYap(yeniPersonel);
+        return sonuc;
     }
 
-    public async Task<bool> UpdateAsync(int id, PersonelUpdateDto dto)
+    public async Task<PersonelDto?> UpdateAsync(int id, PersonelUpdateDto dto)
     {
         Personel guncellenecekPersonel = await depo.GetByIdAsync(id);
 
         if (guncellenecekPersonel == null)
         {
-            return false;
+            return null;
         }
 
         guncellenecekPersonel.Ad = dto.Ad;
@@ -124,7 +130,9 @@ public class PersonelService : IPersonelService
         guncellenecekPersonel.Email = dto.Email;
 
         await depo.UpdateAsync(guncellenecekPersonel);
-        return true;
+
+        PersonelDto sonuc = PersoneldenDtoYap(guncellenecekPersonel);
+        return sonuc;
     }
 
     public async Task<bool> UpdateEmailAsync(int id, CalisanEmailUpdateDto dto)

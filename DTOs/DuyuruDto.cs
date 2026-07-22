@@ -6,6 +6,12 @@ public class DuyuruOlusturDto
     public string Icerik { get; set; } = string.Empty;
 }
 
+public class DuyuruUpdateDto
+{
+    public string Baslik { get; set; } = string.Empty;
+    public string Icerik { get; set; } = string.Empty;
+}
+
 public class DuyuruDto
 {
     public int Id { get; set; }

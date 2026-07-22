@@ -72,20 +72,20 @@ public class PersonelController : ControllerBase
     [Authorize(Roles = "IkYonetici")]
     public async Task<IActionResult> Add([FromBody] PersonelCreateDto dto)
     {
-        await personelServis.AddAsync(dto);
-        return Created();
+        PersonelDto created = await personelServis.AddAsync(dto);
+        return Created("", created);
     }
 
     [HttpPut("{id}")]
     [Authorize(Roles = "IkYonetici")]
     public async Task<IActionResult> Update(int id, [FromBody] PersonelUpdateDto dto)
     {
-        bool islemBasarili = await personelServis.UpdateAsync(id, dto);
-        if (islemBasarili == false)
+        PersonelDto? updated = await personelServis.UpdateAsync(id, dto);
+        if (updated == null)
         {
             return NotFound();
         }
-        return NoContent();
+        return Ok(updated);
     }
 
     [HttpDelete("{id}")]

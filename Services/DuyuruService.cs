@@ -38,6 +38,24 @@ public class DuyuruService : IDuyuruService
     }
 
 
+    public async Task<DuyuruDto?> UpdateAsync(int id, DuyuruUpdateDto dto)
+    {
+        Duyuru guncellenecekDuyuru = await duyuruDepo.GetByIdAsync(id);
+
+        if (guncellenecekDuyuru == null)
+        {
+            return null;
+        }
+
+        guncellenecekDuyuru.Baslik = dto.Baslik;
+        guncellenecekDuyuru.Icerik = dto.Icerik;
+
+        await duyuruDepo.UpdateAsync(guncellenecekDuyuru);
+
+        DuyuruDto sonuc = DuyurudanDtoYap(guncellenecekDuyuru);
+        return sonuc;
+    }
+
     public async Task<bool> DeleteAsync(int id)
     {
         Duyuru silinecekDuyuru = await duyuruDepo.GetByIdAsync(id);

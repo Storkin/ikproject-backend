@@ -34,6 +34,12 @@ public class DuyuruRepository : IDuyuruRepository
         await db.SaveChangesAsync();
     }
 
+    public async Task UpdateAsync(Duyuru duyuru)
+    {
+        db.Duyurular.Update(duyuru);
+        await db.SaveChangesAsync();
+    }
+
     public async Task DeleteAsync(Duyuru duyuru)
     {
         db.Duyurular.Remove(duyuru);
