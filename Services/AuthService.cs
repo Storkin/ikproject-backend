@@ -1,4 +1,4 @@
-﻿using System.IdentityModel.Tokens.Jwt;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using IkProjesi.DTOs;
@@ -10,117 +10,116 @@ namespace IkProjesi.Services;
 
 public class AuthService : IAuthService
 {
-    private readonly IUserRepository kullaniciDepo;
-    private readonly IConfiguration ayarlar;
+    private readonly IUserRepository userRepo;
+    private readonly IConfiguration config;
 
-    public AuthService(IUserRepository userRepository, IConfiguration config)
+    public AuthService(IUserRepository userRepository, IConfiguration configuration)
     {
-        kullaniciDepo = userRepository;
-        ayarlar = config;
+        userRepo = userRepository;
+        config = configuration;
     }
 
     public async Task<TokenResponseDto?> RegisterAsync(RegisterDto dto)
     {
-        User mevcutKullanici = await kullaniciDepo.GetByEmailAsync(dto.Email);
-        if (mevcutKullanici != null)
+        User existingUser = await userRepo.GetByEmailAsync(dto.Email);
+        if (existingUser != null)
         {
             return null;
         }
 
-        User yeniKullanici;
+        User newUser;
 
         if (dto.Rol == "Admin")
         {
-            yeniKullanici = new Admin();
+            newUser = new Admin();
         }
         else if (dto.Rol == "IkYonetici")
         {
-            yeniKullanici = new IkYonetici();
+            newUser = new IkYonetici();
         }
         else if (dto.Rol == "Calisan")
         {
-            Calisan yeniCalisan = new Calisan();
-            yeniCalisan.PersonelId = dto.PersonelId.Value;
-            yeniKullanici = yeniCalisan;
+            Calisan newEmployee = new Calisan();
+            newEmployee.PersonelId = dto.PersonelId.Value;
+            newUser = newEmployee;
         }
         else
         {
             throw new ArgumentException("Geçersiz rol girildi.");
         }
 
-        yeniKullanici.Email = dto.Email;
-        yeniKullanici.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
-        yeniKullanici.Rol = dto.Rol;
+        newUser.Email = dto.Email;
+        newUser.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
+        newUser.Rol = dto.Rol;
 
-        await kullaniciDepo.AddAsync(yeniKullanici);
+        await userRepo.AddAsync(newUser);
 
-        return YanitYap(yeniKullanici);
+        return BuildResponse(newUser);
     }
 
     public async Task<TokenResponseDto?> LoginAsync(LoginDto dto)
     {
-
-        User bulunanKullanici = await kullaniciDepo.GetByEmailAsync(dto.Email);
-        if (bulunanKullanici == null)
+        User foundUser = await userRepo.GetByEmailAsync(dto.Email);
+        if (foundUser == null)
         {
             return null;
         }
 
-        bool sifreDogruMu = BCrypt.Net.BCrypt.Verify(dto.Password, bulunanKullanici.PasswordHash);
-        if (sifreDogruMu == false)
+        bool passwordCorrect = BCrypt.Net.BCrypt.Verify(dto.Password, foundUser.PasswordHash);
+        if (passwordCorrect == false)
         {
             return null;
         }
 
-        return YanitYap(bulunanKullanici);
+        return BuildResponse(foundUser);
     }
 
-    private TokenResponseDto YanitYap(User kullanici)
+    private TokenResponseDto BuildResponse(User user)
     {
-        string token = TokenUret(kullanici);
+        string token = GenerateToken(user);
 
         UserDto userDto = new UserDto();
-        userDto.Email = kullanici.Email;
-        userDto.Rol = kullanici.Rol;
-        if (kullanici is Calisan)
+        userDto.Email = user.Email;
+        userDto.Rol = user.Rol;
+        if (user is Calisan)
         {
-            Calisan calisan = (Calisan)kullanici;
-            userDto.PersonelId = calisan.PersonelId;
+            Calisan employee = (Calisan)user;
+            userDto.PersonelId = employee.PersonelId;
         }
 
-        TokenResponseDto yanit = new TokenResponseDto();
-        yanit.Token = token;
-        yanit.User = userDto;
-        return yanit;
+        TokenResponseDto response = new TokenResponseDto();
+        response.Token = token;
+        response.User = userDto;
+        return response;
     }
 
-    private string TokenUret(User kullanici)
+    private string GenerateToken(User user)
     {
-        List<Claim> claimListesi = new List<Claim>();
-        claimListesi.Add(new Claim(ClaimTypes.NameIdentifier, kullanici.Id.ToString()));
-        claimListesi.Add(new Claim(ClaimTypes.Email, kullanici.Email));
-        claimListesi.Add(new Claim(ClaimTypes.Role, kullanici.Rol));
+        List<Claim> claimList = new List<Claim>();
+        claimList.Add(new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()));
+        claimList.Add(new Claim(ClaimTypes.Email, user.Email));
+        claimList.Add(new Claim(ClaimTypes.Role, user.Rol));
 
-        if (kullanici is Calisan)
+        if (user is Calisan)
         {
-            Calisan calisan = (Calisan)kullanici;
-            claimListesi.Add(new Claim("PersonelId", calisan.PersonelId.ToString()));
+            Calisan employee = (Calisan)user;
+            claimList.Add(new Claim("PersonelId", employee.PersonelId.ToString()));
         }
 
-        string gizliAnahtar = ayarlar["Jwt:Key"];
-        byte[] anahtarBytes = Encoding.UTF8.GetBytes(gizliAnahtar);
-        SymmetricSecurityKey guvenlikAnahtari = new SymmetricSecurityKey(anahtarBytes);
-        SigningCredentials imzaAyarlari = new SigningCredentials(guvenlikAnahtari, SecurityAlgorithms.HmacSha256);
+        string secretKey = config["Jwt:Key"];
+        byte[] keyBytes = Encoding.UTF8.GetBytes(secretKey);
+        SymmetricSecurityKey securityKey = new SymmetricSecurityKey(keyBytes);
+        SigningCredentials signingCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
         JwtSecurityToken token = new JwtSecurityToken(
-            issuer: ayarlar["Jwt:Issuer"],
-            audience: ayarlar["Jwt:Audience"],
-            claims: claimListesi,
-            expires: DateTime.UtcNow.AddHours(int.Parse(ayarlar["Jwt:ExpireHours"])),
-            signingCredentials: imzaAyarlari
+            issuer: config["Jwt:Issuer"],
+            audience: config["Jwt:Audience"],
+            claims: claimList,
+            expires: DateTime.UtcNow.AddHours(int.Parse(config["Jwt:ExpireHours"])),
+            signingCredentials: signingCredentials
         );
 
-        string tokenMetni = new JwtSecurityTokenHandler().WriteToken(token);
-        return tokenMetni;
+        string tokenText = new JwtSecurityTokenHandler().WriteToken(token);
+        return tokenText;
     }
 }

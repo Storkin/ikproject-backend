@@ -1,15 +1,15 @@
-﻿using IkProjesi.DTOs;
+using IkProjesi.DTOs;
 
 namespace IkProjesi.Services;
 
-public interface IPersonelService
+public interface IPersonnelService
 {
     Task<List<PersonelDto>> GetAllAsync();
-    Task<List<PersonelDto>> GetByDepartmanAsync(string departman);
-    Task<List<PersonelDto>> GetOrderedByMaasAsync(bool azalan);
+    Task<List<PersonelDto>> GetByDepartmentAsync(string department);
+    Task<List<PersonelDto>> GetOrderedBySalaryAsync(bool descending);
     Task<PersonelDto?> GetByIdAsync(int id);
     Task<PersonelDto?> GetByEmailAsync(string email);
-    Task<List<PersonelDto>> AraAsync(string kelime);
+    Task<List<PersonelDto>> SearchAsync(string keyword);
     Task<PersonelDto> AddAsync(PersonelCreateDto dto);
     Task<PersonelDto?> UpdateAsync(int id, PersonelUpdateDto dto);
     Task<bool> UpdateEmailAsync(int id, CalisanEmailUpdateDto dto);

@@ -1,4 +1,4 @@
-﻿using IkProjesi.DTOs;
+using IkProjesi.DTOs;
 using IkProjesi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -6,38 +6,38 @@ using Microsoft.AspNetCore.Mvc;
 namespace IkProjesi.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("Announcement")]
 [Authorize]
-public class DuyuruController : ControllerBase
+public class AnnouncementController : ControllerBase
 {
-    private readonly IDuyuruService duyuruServis;
+    private readonly IAnnouncementService announcementService;
 
-    public DuyuruController(IDuyuruService service)
+    public AnnouncementController(IAnnouncementService service)
     {
-        duyuruServis = service;
+        announcementService = service;
     }
 
-    [HttpGet]
+    [HttpGet("getAnnouncements")]
     [Authorize(Roles = "IkYonetici,Calisan")]
     public async Task<IActionResult> GetAll()
     {
-        List<DuyuruDto> tumDuyurular = await duyuruServis.GetAllAsync();
-        return Ok(tumDuyurular);
+        List<DuyuruDto> allAnnouncements = await announcementService.GetAllAsync();
+        return Ok(allAnnouncements);
     }
 
-    [HttpPost]
+    [HttpPost("createAnnouncement")]
     [Authorize(Roles = "IkYonetici")]
     public async Task<IActionResult> Add([FromBody] DuyuruOlusturDto dto)
     {
-        DuyuruDto created = await duyuruServis.AddAsync(dto);
+        DuyuruDto created = await announcementService.AddAsync(dto);
         return Created("", created);
     }
 
-    [HttpPut("{id}")]
+    [HttpPut("updateAnnouncement/{id}")]
     [Authorize(Roles = "IkYonetici")]
     public async Task<IActionResult> Update(int id, [FromBody] DuyuruUpdateDto dto)
     {
-        DuyuruDto? updated = await duyuruServis.UpdateAsync(id, dto);
+        DuyuruDto? updated = await announcementService.UpdateAsync(id, dto);
         if (updated == null)
         {
             return NotFound();
@@ -45,12 +45,12 @@ public class DuyuruController : ControllerBase
         return Ok(updated);
     }
 
-    [HttpDelete("{id}")]
+    [HttpDelete("deleteAnnouncement/{id}")]
     [Authorize(Roles = "IkYonetici")]
     public async Task<IActionResult> Delete(int id)
     {
-        bool islemBasarili = await duyuruServis.DeleteAsync(id);
-        if (islemBasarili == false)
+        bool success = await announcementService.DeleteAsync(id);
+        if (success == false)
         {
             return NotFound();
         }

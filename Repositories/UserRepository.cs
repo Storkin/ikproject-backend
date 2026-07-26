@@ -1,4 +1,4 @@
-﻿using IkProjesi.Data;
+using IkProjesi.Data;
 using IkProjesi.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,15 +15,15 @@ public class UserRepository : IUserRepository
 
     public async Task<User> GetByEmailAsync(string email)
     {
-        User bulunanKullanici = await db.Users
+        User found = await db.Users
             .FirstOrDefaultAsync(u => u.Email == email);
 
-        return bulunanKullanici;
+        return found;
     }
 
-    public async Task AddAsync(User kullanici)
+    public async Task AddAsync(User user)
     {
-        await db.Users.AddAsync(kullanici);
+        await db.Users.AddAsync(user);
         await db.SaveChangesAsync();
     }
 }

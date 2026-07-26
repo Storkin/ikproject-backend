@@ -1,8 +1,8 @@
-﻿using IkProjesi.DTOs;
+using IkProjesi.DTOs;
 
 namespace IkProjesi.Services;
 
-public interface IDuyuruService
+public interface IAnnouncementService
 {
     Task<List<DuyuruDto>> GetAllAsync();
     Task<DuyuruDto> AddAsync(DuyuruOlusturDto dto);

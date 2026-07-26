@@ -54,14 +54,24 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
-builder.Services.AddScoped<IPersonelRepository, PersonelRepository>();
-builder.Services.AddScoped<IPersonelService, PersonelService>();
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
+builder.Services.AddScoped<IPersonnelRepository, PersonnelRepository>();
+builder.Services.AddScoped<IPersonnelService, PersonnelService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IIzinRepository, IzinRepository>();
-builder.Services.AddScoped<IIzinService, IzinService>();
-builder.Services.AddScoped<IDuyuruRepository, DuyuruRepository>();
-builder.Services.AddScoped<IDuyuruService, DuyuruService>();
+builder.Services.AddScoped<ILeaveRepository, LeaveRepository>();
+builder.Services.AddScoped<ILeaveService, LeaveService>();
+builder.Services.AddScoped<IAnnouncementRepository, AnnouncementRepository>();
+builder.Services.AddScoped<IAnnouncementService, AnnouncementService>();
 
 var app = builder.Build();
 
@@ -74,6 +84,8 @@ if (app.Environment.IsDevelopment())
         options.SwaggerEndpoint("/swagger/v1/swagger.json", "IK Projesi API v1");
     });
 }
+
+app.UseCors("AllowFrontend");
 
 app.UseHttpsRedirection();
 app.UseAuthentication();
