@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using System.Text.Json.Serialization;
 using IkProjesi.Data;
 using IkProjesi.Repositories;
 using IkProjesi.Services;
@@ -8,7 +9,12 @@ using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        options.JsonSerializerOptions.Converters.Add(new IkProjesi.Helpers.DateOnlyJsonConverter());
+    });
 builder.Services.AddOpenApi();
 
 builder.Services.AddSwaggerGen(options =>
@@ -69,9 +75,16 @@ builder.Services.AddScoped<IPersonnelService, PersonnelService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ILeaveRepository, LeaveRepository>();
+builder.Services.AddScoped<ILeaveBalanceRepository, LeaveBalanceRepository>();
 builder.Services.AddScoped<ILeaveService, LeaveService>();
 builder.Services.AddScoped<IAnnouncementRepository, AnnouncementRepository>();
 builder.Services.AddScoped<IAnnouncementService, AnnouncementService>();
+builder.Services.AddScoped<IEquipmentRepository, EquipmentRepository>();
+builder.Services.AddScoped<IEquipmentService, EquipmentService>();
+builder.Services.AddScoped<IEducationRepository, EducationRepository>();
+builder.Services.AddScoped<IEducationService, EducationService>();
+builder.Services.AddScoped<ISalaryRepository, SalaryRepository>();
+builder.Services.AddScoped<ISalaryService, SalaryService>();
 
 var app = builder.Build();
 

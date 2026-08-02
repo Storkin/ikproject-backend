@@ -7,11 +7,13 @@ namespace IkProjesi.Services;
 public class PersonnelService : IPersonnelService
 {
     private readonly IPersonnelRepository repo;
+    private readonly IUserRepository userRepo;
     private readonly IConfiguration config;
 
-    public PersonnelService(IPersonnelRepository repository, IConfiguration configuration)
+    public PersonnelService(IPersonnelRepository repository, IUserRepository userRepository, IConfiguration configuration)
     {
         repo = repository;
+        userRepo = userRepository;
         config = configuration;
     }
 
@@ -29,7 +31,7 @@ public class PersonnelService : IPersonnelService
         return resultList;
     }
 
-    public async Task<List<PersonelDto>> GetByDepartmentAsync(string department)
+    public async Task<List<PersonelDto>> GetByDepartmentAsync(Departman department)
     {
         List<Personel> sameDepartment = await repo.GetByDepartmentAsync(department);
 
@@ -103,15 +105,38 @@ public class PersonnelService : IPersonnelService
         newPersonnel.Ad = dto.Ad;
         newPersonnel.Soyad = dto.Soyad;
         newPersonnel.Departman = dto.Departman;
+        newPersonnel.Unvan = dto.Unvan;
         newPersonnel.Maas = dto.Maas;
-        newPersonnel.IseBaslamaTarihi = dto.IseBaslamaTarihi;
+        newPersonnel.IseBaslamaTarihi = DateTime.SpecifyKind(dto.IseBaslamaTarihi, DateTimeKind.Utc);
         newPersonnel.Email = dto.Email;
-        newPersonnel.YillikIzinHakki = int.Parse(config["PersonelAyarlari:VarsayilanIzinHakki"]);
+        newPersonnel.Telefon = dto.Telefon;
+        newPersonnel.Adres = dto.Adres;
+        newPersonnel.Iban = dto.Iban;
+        newPersonnel.DogumTarihi = ToUtc(dto.DogumTarihi);
 
         await repo.AddAsync(newPersonnel);
 
+        User existingUser = await userRepo.GetByEmailAsync(newPersonnel.Email);
+        if (existingUser == null)
+        {
+            Calisan account = new Calisan();
+            account.Email = newPersonnel.Email;
+            account.PasswordHash = BCrypt.Net.BCrypt.HashPassword(BuildDefaultPassword(newPersonnel.Ad));
+            account.Rol = "Calisan";
+            account.PersonelId = newPersonnel.Id;
+
+            await userRepo.AddAsync(account);
+        }
+
         PersonelDto result = MapToDto(newPersonnel);
         return result;
+    }
+
+    private string BuildDefaultPassword(string ad)
+    {
+        string trimmed = ad.Trim();
+        string capitalized = char.ToUpper(trimmed[0]) + trimmed.Substring(1).ToLower();
+        return capitalized + "123!";
     }
 
     public async Task<PersonelDto?> UpdateAsync(int id, PersonelUpdateDto dto)
@@ -126,8 +151,14 @@ public class PersonnelService : IPersonnelService
         personnel.Ad = dto.Ad;
         personnel.Soyad = dto.Soyad;
         personnel.Departman = dto.Departman;
+        personnel.Unvan = dto.Unvan;
         personnel.Maas = dto.Maas;
+        personnel.IseBaslamaTarihi = DateTime.SpecifyKind(dto.IseBaslamaTarihi, DateTimeKind.Utc);
         personnel.Email = dto.Email;
+        personnel.Telefon = dto.Telefon;
+        personnel.Adres = dto.Adres;
+        personnel.Iban = dto.Iban;
+        personnel.DogumTarihi = ToUtc(dto.DogumTarihi);
 
         await repo.UpdateAsync(personnel);
 
@@ -135,7 +166,7 @@ public class PersonnelService : IPersonnelService
         return result;
     }
 
-    public async Task<bool> UpdateEmailAsync(int id, CalisanEmailUpdateDto dto)
+    public async Task<bool> UpdateOwnProfileAsync(int id, CalisanProfilUpdateDto dto)
     {
         Personel personnel = await repo.GetByIdAsync(id);
 
@@ -145,6 +176,10 @@ public class PersonnelService : IPersonnelService
         }
 
         personnel.Email = dto.Email;
+        personnel.Telefon = dto.Telefon;
+        personnel.Adres = dto.Adres;
+        personnel.Iban = dto.Iban;
+
         await repo.UpdateAsync(personnel);
         return true;
     }
@@ -169,9 +204,24 @@ public class PersonnelService : IPersonnelService
         dto.Ad = personnel.Ad;
         dto.Soyad = personnel.Soyad;
         dto.Departman = personnel.Departman;
+        dto.Unvan = personnel.Unvan;
         dto.Maas = personnel.Maas;
         dto.IseBaslamaTarihi = personnel.IseBaslamaTarihi;
         dto.Email = personnel.Email;
+        dto.Telefon = personnel.Telefon;
+        dto.Adres = personnel.Adres;
+        dto.Iban = personnel.Iban;
+        dto.DogumTarihi = personnel.DogumTarihi;
         return dto;
+    }
+
+    private DateTime? ToUtc(DateTime? value)
+    {
+        if (value == null)
+        {
+            return null;
+        }
+
+        return DateTime.SpecifyKind(value.Value, DateTimeKind.Utc);
     }
 }

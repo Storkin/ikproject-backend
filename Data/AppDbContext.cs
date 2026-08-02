@@ -11,6 +11,10 @@ public class AppDbContext : DbContext
     public DbSet<User> Users { get; set; }
     public DbSet<IzinTalep> IzinTalepler { get; set; }
     public DbSet<Duyuru> Duyurular { get; set; }
+    public DbSet<IzinHakki> IzinHaklari { get; set; }
+    public DbSet<Zimmet> Zimmetler { get; set; }
+    public DbSet<Egitim> Egitimler { get; set; }
+    public DbSet<MaasKaydi> MaasKayitlari { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

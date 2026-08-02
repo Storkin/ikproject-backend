@@ -1,6 +1,8 @@
 using IkProjesi.DTOs;
 using IkProjesi.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace IkProjesi.Controllers;
 
@@ -37,5 +39,25 @@ public class AuthController : ControllerBase
         }
 
         return Ok(response);
+    }
+
+    [HttpPut("changePassword")]
+    [Authorize]
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
+    {
+        string userIdText = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userIdText == null)
+        {
+            return Unauthorized();
+        }
+
+        int userId = int.Parse(userIdText);
+        bool success = await authService.ChangePasswordAsync(userId, dto);
+        if (success == false)
+        {
+            return BadRequest("Mevcut şifre hatalı.");
+        }
+
+        return NoContent();
     }
 }

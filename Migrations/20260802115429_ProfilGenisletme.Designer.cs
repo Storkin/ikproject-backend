@@ -3,6 +3,7 @@ using System;
 using IkProjesi.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace IkProjesi.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260802115429_ProfilGenisletme")]
+    partial class ProfilGenisletme
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -79,39 +82,6 @@ namespace IkProjesi.Migrations
                     b.HasIndex("PersonelId");
 
                     b.ToTable("Egitimler");
-                });
-
-            modelBuilder.Entity("IkProjesi.Models.IzinHakki", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("Devreden")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("HakEdilen")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Kullanilan")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("KullanilanMazeret")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("PersonelId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Yil")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PersonelId");
-
-                    b.ToTable("IzinHaklari");
                 });
 
             modelBuilder.Entity("IkProjesi.Models.IzinTalep", b =>
@@ -214,6 +184,12 @@ namespace IkProjesi.Migrations
                     b.Property<DateTime>("IseBaslamaTarihi")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int>("KullanilanMazeretIzin")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("KullanılanIzin")
+                        .HasColumnType("integer");
+
                     b.Property<decimal>("Maas")
                         .HasColumnType("numeric");
 
@@ -225,6 +201,9 @@ namespace IkProjesi.Migrations
                         .HasColumnType("text");
 
                     b.Property<int>("Unvan")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("YillikIzinHakki")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
@@ -323,17 +302,6 @@ namespace IkProjesi.Migrations
                 });
 
             modelBuilder.Entity("IkProjesi.Models.Egitim", b =>
-                {
-                    b.HasOne("IkProjesi.Models.Personel", "Personel")
-                        .WithMany()
-                        .HasForeignKey("PersonelId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Personel");
-                });
-
-            modelBuilder.Entity("IkProjesi.Models.IzinHakki", b =>
                 {
                     b.HasOne("IkProjesi.Models.Personel", "Personel")
                         .WithMany()

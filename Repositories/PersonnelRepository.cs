@@ -19,7 +19,7 @@ public class PersonnelRepository : IPersonnelRepository
         return allPersonnel;
     }
 
-    public async Task<List<Personel>> GetByDepartmentAsync(string department)
+    public async Task<List<Personel>> GetByDepartmentAsync(Departman department)
     {
         List<Personel> sameDepartment = await db.Personeller
             .Where(p => p.Departman == department)

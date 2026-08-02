@@ -1,4 +1,5 @@
 using IkProjesi.DTOs;
+using IkProjesi.Models;
 using IkProjesi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -40,7 +41,7 @@ public class PersonnelController : ControllerBase
 
     [HttpGet("getByDepartment/{department}")]
     [Authorize(Roles = "IkYonetici")]
-    public async Task<IActionResult> GetByDepartment(string department)
+    public async Task<IActionResult> GetByDepartment(Departman department)
     {
         List<PersonelDto> sameDepartment = await personnelService.GetByDepartmentAsync(department);
         return Ok(sameDepartment);
@@ -119,9 +120,9 @@ public class PersonnelController : ControllerBase
         return Ok(profile);
     }
 
-    [HttpPut("updateProfileEmail")]
+    [HttpPut("updateProfile")]
     [Authorize(Roles = "Calisan")]
-    public async Task<IActionResult> UpdateEmail([FromBody] CalisanEmailUpdateDto dto)
+    public async Task<IActionResult> UpdateOwnProfile([FromBody] CalisanProfilUpdateDto dto)
     {
         string personnelIdText = User.FindFirstValue("PersonelId");
         if (personnelIdText == null)
@@ -130,7 +131,7 @@ public class PersonnelController : ControllerBase
         }
 
         int personnelId = int.Parse(personnelIdText);
-        bool success = await personnelService.UpdateEmailAsync(personnelId, dto);
+        bool success = await personnelService.UpdateOwnProfileAsync(personnelId, dto);
         if (success == false)
         {
             return NotFound();

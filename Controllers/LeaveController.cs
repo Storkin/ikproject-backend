@@ -46,6 +46,14 @@ public class LeaveController : ControllerBase
         return Ok(summary);
     }
 
+    [HttpGet("getLeaveBalances/{personnelId}")]
+    [Authorize(Roles = "IkYonetici")]
+    public async Task<IActionResult> GetLeaveBalances(int personnelId)
+    {
+        List<IzinHakkiDto> balances = await leaveService.GetBalanceHistoryAsync(personnelId);
+        return Ok(balances);
+    }
+
     [HttpPut("approveLeave/{id}")]
     [Authorize(Roles = "IkYonetici")]
     public async Task<IActionResult> Approve(int id)
@@ -123,5 +131,20 @@ public class LeaveController : ControllerBase
         }
 
         return Ok(mySummary);
+    }
+
+    [HttpGet("getMyLeaveBalances")]
+    [Authorize(Roles = "Calisan")]
+    public async Task<IActionResult> GetMyLeaveBalances()
+    {
+        string personnelIdText = User.FindFirstValue("PersonelId");
+        if (personnelIdText == null)
+        {
+            return Unauthorized();
+        }
+
+        int personnelId = int.Parse(personnelIdText);
+        List<IzinHakkiDto> myBalances = await leaveService.GetBalanceHistoryAsync(personnelId);
+        return Ok(myBalances);
     }
 }

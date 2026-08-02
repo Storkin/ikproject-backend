@@ -74,6 +74,26 @@ public class AuthService : IAuthService
         return BuildResponse(foundUser);
     }
 
+    public async Task<bool> ChangePasswordAsync(int userId, ChangePasswordDto dto)
+    {
+        User user = await userRepo.GetByIdAsync(userId);
+        if (user == null)
+        {
+            return false;
+        }
+
+        bool currentPasswordCorrect = BCrypt.Net.BCrypt.Verify(dto.CurrentPassword, user.PasswordHash);
+        if (currentPasswordCorrect == false)
+        {
+            return false;
+        }
+
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+        await userRepo.UpdateAsync(user);
+
+        return true;
+    }
+
     private TokenResponseDto BuildResponse(User user)
     {
         string token = GenerateToken(user);

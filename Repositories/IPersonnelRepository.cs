@@ -5,7 +5,7 @@ namespace IkProjesi.Repositories;
 public interface IPersonnelRepository
 {
     Task<List<Personel>> GetAllAsync();
-    Task<List<Personel>> GetByDepartmentAsync(string department);
+    Task<List<Personel>> GetByDepartmentAsync(Departman department);
     Task<List<Personel>> GetOrderedBySalaryAsync(bool descending);
     Task<Personel> GetByIdAsync(int id);
     Task<Personel> GetByEmailAsync(string email);
