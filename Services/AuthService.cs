@@ -89,6 +89,7 @@ public class AuthService : IAuthService
         }
 
         user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+        user.IsFirstLogin = false;
         await userRepo.UpdateAsync(user);
 
         return true;
@@ -101,6 +102,7 @@ public class AuthService : IAuthService
         UserDto userDto = new UserDto();
         userDto.Email = user.Email;
         userDto.Rol = user.Rol;
+        userDto.IsFirstLogin = user.IsFirstLogin;
         if (user is Calisan)
         {
             Calisan employee = (Calisan)user;

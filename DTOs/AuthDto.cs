@@ -19,6 +19,7 @@ public class UserDto
     public string Email { get; set; } = string.Empty;
     public string Rol { get; set; } = string.Empty;
     public int? PersonelId { get; set; }
+    public bool IsFirstLogin { get; set; }
 }
 
 public class TokenResponseDto

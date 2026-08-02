@@ -17,6 +17,7 @@ public class LeaveRepository : ILeaveRepository
     {
         List<IzinTalep> allRequests = await db.IzinTalepler
             .Include(t => t.Personel)
+            .Include(t => t.Substitute)
             .ToListAsync();
 
         return allRequests;
@@ -26,6 +27,7 @@ public class LeaveRepository : ILeaveRepository
     {
         List<IzinTalep> pendingRequests = await db.IzinTalepler
             .Include(t => t.Personel)
+            .Include(t => t.Substitute)
             .Where(t => t.Durum == IzinDurum.Beklemede)
             .ToListAsync();
 
@@ -35,6 +37,8 @@ public class LeaveRepository : ILeaveRepository
     public async Task<List<IzinTalep>> GetByPersonnelIdAsync(int personnelId)
     {
         List<IzinTalep> personnelRequests = await db.IzinTalepler
+            .Include(t => t.Personel)
+            .Include(t => t.Substitute)
             .Where(t => t.PersonelId == personnelId)
             .ToListAsync();
 
@@ -45,6 +49,7 @@ public class LeaveRepository : ILeaveRepository
     {
         IzinTalep found = await db.IzinTalepler
             .Include(t => t.Personel)
+            .Include(t => t.Substitute)
             .FirstOrDefaultAsync(t => t.Id == id);
 
         return found;

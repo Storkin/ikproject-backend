@@ -15,13 +15,17 @@ public class PersonnelRepository : IPersonnelRepository
 
     public async Task<List<Personel>> GetAllAsync()
     {
-        List<Personel> allPersonnel = await db.Personeller.ToListAsync();
+        List<Personel> allPersonnel = await db.Personeller
+            .Include(p => p.Experiences)
+            .ToListAsync();
+
         return allPersonnel;
     }
 
     public async Task<List<Personel>> GetByDepartmentAsync(Departman department)
     {
         List<Personel> sameDepartment = await db.Personeller
+            .Include(p => p.Experiences)
             .Where(p => p.Departman == department)
             .ToListAsync();
 
@@ -35,12 +39,14 @@ public class PersonnelRepository : IPersonnelRepository
         if (descending == true)
         {
             sortedList = await db.Personeller
+                .Include(p => p.Experiences)
                 .OrderByDescending(p => p.Maas)
                 .ToListAsync();
         }
         else
         {
             sortedList = await db.Personeller
+                .Include(p => p.Experiences)
                 .OrderBy(p => p.Maas)
                 .ToListAsync();
         }
@@ -53,6 +59,7 @@ public class PersonnelRepository : IPersonnelRepository
         string lowerKeyword = keyword.ToLower();
 
         List<Personel> found = await db.Personeller
+            .Include(p => p.Experiences)
             .Where(p => p.Ad.ToLower().Contains(lowerKeyword) ||
                         p.Soyad.ToLower().Contains(lowerKeyword))
             .ToListAsync();
@@ -62,13 +69,17 @@ public class PersonnelRepository : IPersonnelRepository
 
     public async Task<Personel> GetByIdAsync(int id)
     {
-        Personel found = await db.Personeller.FindAsync(id);
+        Personel found = await db.Personeller
+            .Include(p => p.Experiences)
+            .FirstOrDefaultAsync(p => p.Id == id);
+
         return found;
     }
 
     public async Task<Personel> GetByEmailAsync(string email)
     {
         Personel found = await db.Personeller
+            .Include(p => p.Experiences)
             .FirstOrDefaultAsync(p => p.Email == email);
 
         return found;

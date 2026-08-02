@@ -143,6 +143,7 @@ public class LeaveService : ILeaveService
         summary.KullanilanGun = balance.Kullanilan;
         summary.KalanGun = totalEntitlement - balance.Kullanilan;
         summary.KullanilanMazeretGun = balance.KullanilanMazeret;
+        summary.KullanilanUcretsizGun = balance.KullanilanUcretsiz;
         summary.Gecmis = historyList;
 
         return summary;
@@ -166,6 +167,38 @@ public class LeaveService : ILeaveService
             dto.KullanilanGun = balance.Kullanilan;
             dto.KalanGun = totalEntitlement - balance.Kullanilan;
             dto.KullanilanMazeretGun = balance.KullanilanMazeret;
+            dto.KullanilanUcretsizGun = balance.KullanilanUcretsiz;
+
+            resultList.Add(dto);
+        }
+
+        return resultList;
+    }
+
+    // Calisan izin talebi acarken yerine bakacak kisiyi bu listeden secer.
+    // Sadece kendi departmanindaki diger personeller doner.
+    public async Task<List<SubstituteCandidateDto>> GetSubstituteCandidatesAsync(int personnelId)
+    {
+        Personel personnel = await personnelRepo.GetByIdAsync(personnelId);
+        if (personnel == null)
+        {
+            return new List<SubstituteCandidateDto>();
+        }
+
+        List<Personel> sameDepartment = await personnelRepo.GetByDepartmentAsync(personnel.Departman);
+
+        List<SubstituteCandidateDto> resultList = new List<SubstituteCandidateDto>();
+        foreach (Personel colleague in sameDepartment)
+        {
+            if (colleague.Id == personnelId)
+            {
+                continue;
+            }
+
+            SubstituteCandidateDto dto = new SubstituteCandidateDto();
+            dto.Id = colleague.Id;
+            dto.AdSoyad = colleague.Ad + " " + colleague.Soyad;
+            dto.Unvan = colleague.Unvan;
 
             resultList.Add(dto);
         }
@@ -199,8 +232,28 @@ public class LeaveService : ILeaveService
             }
         }
 
+        if (dto.SubstituteId != null)
+        {
+            if (dto.SubstituteId == personnelId)
+            {
+                return (false, "Kendinizi yerinize bakacak kişi olarak seçemezsiniz.");
+            }
+
+            Personel substitute = await personnelRepo.GetByIdAsync(dto.SubstituteId.Value);
+            if (substitute == null)
+            {
+                return (false, "Yerine bakacak kişi bulunamadı.");
+            }
+
+            if (substitute.Departman != personnel.Departman)
+            {
+                return (false, "Yerine bakacak kişi aynı departmandan seçilmelidir.");
+            }
+        }
+
         IzinTalep newRequest = new IzinTalep();
         newRequest.PersonelId = personnelId;
+        newRequest.SubstituteId = dto.SubstituteId;
         newRequest.BaslangicTarihi = DateTime.SpecifyKind(dto.BaslangicTarihi, DateTimeKind.Utc);
         newRequest.BitisTarihi = DateTime.SpecifyKind(dto.BitisTarihi, DateTimeKind.Utc);
         newRequest.GunSayisi = requestedDays;
@@ -236,6 +289,10 @@ public class LeaveService : ILeaveService
             }
 
             balance.Kullanilan = balance.Kullanilan + request.GunSayisi;
+        }
+        else if (request.Turu == IzinTuru.Ucretsiz)
+        {
+            balance.KullanilanUcretsiz = balance.KullanilanUcretsiz + request.GunSayisi;
         }
         else
         {
@@ -275,10 +332,18 @@ public class LeaveService : ILeaveService
             personnelFullName = request.Personel.Ad + " " + request.Personel.Soyad;
         }
 
+        string? substituteFullName = null;
+        if (request.Substitute != null)
+        {
+            substituteFullName = request.Substitute.Ad + " " + request.Substitute.Soyad;
+        }
+
         IzinTalepDto dto = new IzinTalepDto();
         dto.Id = request.Id;
         dto.PersonelId = request.PersonelId;
         dto.PersonelAdSoyad = personnelFullName;
+        dto.SubstituteId = request.SubstituteId;
+        dto.SubstituteAdSoyad = substituteFullName;
         dto.BaslangicTarihi = request.BaslangicTarihi;
         dto.BitisTarihi = request.BitisTarihi;
         dto.GunSayisi = request.GunSayisi;

@@ -10,4 +10,5 @@ public class IzinHakki
     public int Devreden { get; set; }
     public int Kullanilan { get; set; }
     public int KullanilanMazeret { get; set; }
+    public int KullanilanUcretsiz { get; set; }
 }

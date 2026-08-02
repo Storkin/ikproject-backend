@@ -16,6 +16,7 @@ public class PersonelDto
     public string? Adres { get; set; }
     public string? Iban { get; set; }
     public DateTime? DogumTarihi { get; set; }
+    public List<ExperienceDto> Experiences { get; set; } = new();
 }
 
 public class PersonelCreateDto
@@ -31,6 +32,7 @@ public class PersonelCreateDto
     public string? Adres { get; set; }
     public string? Iban { get; set; }
     public DateTime? DogumTarihi { get; set; }
+    public List<ExperienceDto> Experiences { get; set; } = new();
 }
 
 public class PersonelUpdateDto
@@ -46,6 +48,7 @@ public class PersonelUpdateDto
     public string? Adres { get; set; }
     public string? Iban { get; set; }
     public DateTime? DogumTarihi { get; set; }
+    public List<ExperienceDto> Experiences { get; set; } = new();
 }
 
 public class CalisanProfilUpdateDto

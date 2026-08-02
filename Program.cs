@@ -71,6 +71,7 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddScoped<IPersonnelRepository, PersonnelRepository>();
+builder.Services.AddScoped<IExperienceRepository, ExperienceRepository>();
 builder.Services.AddScoped<IPersonnelService, PersonnelService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();

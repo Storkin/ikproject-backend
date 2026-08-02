@@ -11,5 +11,11 @@ public enum Departman
     Lojistik,
     Hukuk,
     ArGe,
-    MusteriHizmetleri
+    MusteriHizmetleri,
+    // Frontend'in kullandığı İngilizce karşılıklar da kabul edilsin diye eklendi.
+    Software,
+    HR,
+    Finance,
+    Marketing,
+    Management
 }

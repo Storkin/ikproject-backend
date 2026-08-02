@@ -133,6 +133,21 @@ public class LeaveController : ControllerBase
         return Ok(mySummary);
     }
 
+    [HttpGet("getSubstituteCandidates")]
+    [Authorize(Roles = "Calisan")]
+    public async Task<IActionResult> GetSubstituteCandidates()
+    {
+        string personnelIdText = User.FindFirstValue("PersonelId");
+        if (personnelIdText == null)
+        {
+            return Unauthorized();
+        }
+
+        int personnelId = int.Parse(personnelIdText);
+        List<SubstituteCandidateDto> candidates = await leaveService.GetSubstituteCandidatesAsync(personnelId);
+        return Ok(candidates);
+    }
+
     [HttpGet("getMyLeaveBalances")]
     [Authorize(Roles = "Calisan")]
     public async Task<IActionResult> GetMyLeaveBalances()

@@ -14,4 +14,5 @@ public class Personel
     public string? Adres { get; set; }
     public string? Iban { get; set; }
     public DateTime? DogumTarihi { get; set; }
+    public List<Experience> Experiences { get; set; } = new();
 }

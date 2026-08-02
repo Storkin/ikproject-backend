@@ -8,12 +8,18 @@ public class PersonnelService : IPersonnelService
 {
     private readonly IPersonnelRepository repo;
     private readonly IUserRepository userRepo;
+    private readonly IExperienceRepository experienceRepo;
     private readonly IConfiguration config;
 
-    public PersonnelService(IPersonnelRepository repository, IUserRepository userRepository, IConfiguration configuration)
+    public PersonnelService(
+        IPersonnelRepository repository,
+        IUserRepository userRepository,
+        IExperienceRepository experienceRepository,
+        IConfiguration configuration)
     {
         repo = repository;
         userRepo = userRepository;
+        experienceRepo = experienceRepository;
         config = configuration;
     }
 
@@ -115,6 +121,7 @@ public class PersonnelService : IPersonnelService
         newPersonnel.DogumTarihi = ToUtc(dto.DogumTarihi);
 
         await repo.AddAsync(newPersonnel);
+        await SaveExperiencesAsync(newPersonnel, dto.Experiences);
 
         User existingUser = await userRepo.GetByEmailAsync(newPersonnel.Email);
         if (existingUser == null)
@@ -161,9 +168,36 @@ public class PersonnelService : IPersonnelService
         personnel.DogumTarihi = ToUtc(dto.DogumTarihi);
 
         await repo.UpdateAsync(personnel);
+        await SaveExperiencesAsync(personnel, dto.Experiences);
 
         PersonelDto result = MapToDto(personnel);
         return result;
+    }
+
+    // Deneyim listesi personel kaydiyla birlikte geliyor.
+    // Bos/eksik satirlar atlanir, kalanlar personelin guncel listesi olarak yazilir.
+    private async Task SaveExperiencesAsync(Personel personnel, List<ExperienceDto> incoming)
+    {
+        List<Experience> experienceList = new List<Experience>();
+
+        foreach (ExperienceDto item in incoming)
+        {
+            if (string.IsNullOrWhiteSpace(item.Company) && string.IsNullOrWhiteSpace(item.Role))
+            {
+                continue;
+            }
+
+            Experience experience = new Experience();
+            experience.PersonelId = personnel.Id;
+            experience.Company = item.Company ?? string.Empty;
+            experience.Role = item.Role ?? string.Empty;
+            experience.Duration = item.Duration ?? string.Empty;
+
+            experienceList.Add(experience);
+        }
+
+        await experienceRepo.ReplaceForPersonnelAsync(personnel.Id, experienceList);
+        personnel.Experiences = experienceList;
     }
 
     public async Task<bool> UpdateOwnProfileAsync(int id, CalisanProfilUpdateDto dto)
@@ -212,6 +246,17 @@ public class PersonnelService : IPersonnelService
         dto.Adres = personnel.Adres;
         dto.Iban = personnel.Iban;
         dto.DogumTarihi = personnel.DogumTarihi;
+
+        foreach (Experience experience in personnel.Experiences)
+        {
+            ExperienceDto experienceDto = new ExperienceDto();
+            experienceDto.Company = experience.Company;
+            experienceDto.Role = experience.Role;
+            experienceDto.Duration = experience.Duration;
+
+            dto.Experiences.Add(experienceDto);
+        }
+
         return dto;
     }
 
