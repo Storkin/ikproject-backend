@@ -219,6 +219,18 @@ public class LeaveService : ILeaveService
             return (false, "Personel bulunamadı.");
         }
 
+        DateTime requestStart = DateTime.SpecifyKind(dto.BaslangicTarihi, DateTimeKind.Utc);
+        DateTime requestEnd = DateTime.SpecifyKind(dto.BitisTarihi, DateTimeKind.Utc);
+
+        IzinTalep? overlapping = await leaveRepo.GetOverlappingAsync(personnelId, requestStart, requestEnd);
+        if (overlapping != null)
+        {
+            return (false, "Bu tarihlerde zaten bir izin talebiniz var (" +
+                           overlapping.BaslangicTarihi.ToString("dd.MM.yyyy") + " - " +
+                           overlapping.BitisTarihi.ToString("dd.MM.yyyy") + ", " +
+                           overlapping.Durum + ").");
+        }
+
         int requestedDays = (dto.BitisTarihi.Date - dto.BaslangicTarihi.Date).Days + 1;
 
         if (dto.Turu == IzinTuru.Yillik)
@@ -254,8 +266,8 @@ public class LeaveService : ILeaveService
         IzinTalep newRequest = new IzinTalep();
         newRequest.PersonelId = personnelId;
         newRequest.SubstituteId = dto.SubstituteId;
-        newRequest.BaslangicTarihi = DateTime.SpecifyKind(dto.BaslangicTarihi, DateTimeKind.Utc);
-        newRequest.BitisTarihi = DateTime.SpecifyKind(dto.BitisTarihi, DateTimeKind.Utc);
+        newRequest.BaslangicTarihi = requestStart;
+        newRequest.BitisTarihi = requestEnd;
         newRequest.GunSayisi = requestedDays;
         newRequest.Turu = dto.Turu;
         newRequest.Aciklama = dto.Aciklama;

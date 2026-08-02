@@ -11,11 +11,13 @@ namespace IkProjesi.Services;
 public class AuthService : IAuthService
 {
     private readonly IUserRepository userRepo;
+    private readonly IPersonnelRepository personnelRepo;
     private readonly IConfiguration config;
 
-    public AuthService(IUserRepository userRepository, IConfiguration configuration)
+    public AuthService(IUserRepository userRepository, IPersonnelRepository personnelRepository, IConfiguration configuration)
     {
         userRepo = userRepository;
+        personnelRepo = personnelRepository;
         config = configuration;
     }
 
@@ -57,21 +59,81 @@ public class AuthService : IAuthService
         return BuildResponse(newUser);
     }
 
-    public async Task<TokenResponseDto?> LoginAsync(LoginDto dto)
+    public async Task<(TokenResponseDto? response, string message)> LoginAsync(LoginDto dto)
     {
         User foundUser = await userRepo.GetByEmailAsync(dto.Email);
         if (foundUser == null)
         {
-            return null;
+            return (null, "Email veya şifre hatalı.");
         }
 
         bool passwordCorrect = BCrypt.Net.BCrypt.Verify(dto.Password, foundUser.PasswordHash);
         if (passwordCorrect == false)
         {
-            return null;
+            return (null, "Email veya şifre hatalı.");
         }
 
-        return BuildResponse(foundUser);
+        // İşten ayrılmış personel sisteme giriş yapamaz.
+        if (foundUser is Calisan)
+        {
+            Calisan employee = (Calisan)foundUser;
+            Personel personnel = await personnelRepo.GetByIdAsync(employee.PersonelId);
+
+            if (personnel != null && personnel.AktifMi == false)
+            {
+                return (null, "Bu hesap aktif değil. İnsan Kaynakları ile görüşün.");
+            }
+        }
+
+        return (BuildResponse(foundUser), "Giriş başarılı.");
+    }
+
+    // İK, şifresini unutan kullanıcının şifresini varsayılana döndürür.
+    // Kullanıcı ilk girişinde şifre değiştirmeye yönlendirilsin diye
+    // IsFirstLogin tekrar true yapılır.
+    public async Task<(bool success, string message)> ResetPasswordAsync(ResetPasswordDto dto)
+    {
+        User user = await userRepo.GetByEmailAsync(dto.Email);
+        if (user == null)
+        {
+            return (false, "Bu email ile kayıtlı kullanıcı bulunamadı.");
+        }
+
+        string defaultPassword = await BuildDefaultPasswordAsync(user);
+
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(defaultPassword);
+        user.IsFirstLogin = true;
+        await userRepo.UpdateAsync(user);
+
+        return (true, "Şifre sıfırlandı. Yeni şifre: " + defaultPassword);
+    }
+
+    private async Task<string> BuildDefaultPasswordAsync(User user)
+    {
+        string baseName;
+
+        if (user is Calisan)
+        {
+            Calisan employee = (Calisan)user;
+            Personel personnel = await personnelRepo.GetByIdAsync(employee.PersonelId);
+
+            if (personnel != null)
+            {
+                baseName = personnel.Ad;
+            }
+            else
+            {
+                baseName = user.Email.Split('@')[0];
+            }
+        }
+        else
+        {
+            baseName = user.Email.Split('@')[0];
+        }
+
+        string trimmed = baseName.Trim();
+        string capitalized = char.ToUpper(trimmed[0]) + trimmed.Substring(1).ToLower();
+        return capitalized + "123!";
     }
 
     public async Task<bool> ChangePasswordAsync(int userId, ChangePasswordDto dto)

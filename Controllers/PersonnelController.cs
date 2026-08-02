@@ -21,10 +21,22 @@ public class PersonnelController : ControllerBase
 
     [HttpGet("getPersonnel")]
     [Authorize(Roles = "IkYonetici")]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll([FromQuery] bool includeInactive = false)
     {
-        List<PersonelDto> allPersonnel = await personnelService.GetAllAsync();
+        List<PersonelDto> allPersonnel = await personnelService.GetAllAsync(includeInactive);
         return Ok(allPersonnel);
+    }
+
+    [HttpPut("reactivatePersonnel/{id}")]
+    [Authorize(Roles = "IkYonetici")]
+    public async Task<IActionResult> Reactivate(int id)
+    {
+        (bool success, string message) result = await personnelService.ReactivateAsync(id);
+        if (result.success == false)
+        {
+            return BadRequest(result.message);
+        }
+        return Ok(result.message);
     }
 
     [HttpGet("getById/{id}")]

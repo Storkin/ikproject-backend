@@ -13,12 +13,18 @@ public class PersonnelRepository : IPersonnelRepository
         db = context;
     }
 
-    public async Task<List<Personel>> GetAllAsync()
+    // Isten ayrilan personel silinmez, pasife alinir.
+    // Listelerde varsayilan olarak sadece aktif calisanlar doner.
+    public async Task<List<Personel>> GetAllAsync(bool includeInactive = false)
     {
-        List<Personel> allPersonnel = await db.Personeller
-            .Include(p => p.Experiences)
-            .ToListAsync();
+        IQueryable<Personel> query = db.Personeller.Include(p => p.Experiences);
 
+        if (includeInactive == false)
+        {
+            query = query.Where(p => p.AktifMi);
+        }
+
+        List<Personel> allPersonnel = await query.ToListAsync();
         return allPersonnel;
     }
 
@@ -26,7 +32,7 @@ public class PersonnelRepository : IPersonnelRepository
     {
         List<Personel> sameDepartment = await db.Personeller
             .Include(p => p.Experiences)
-            .Where(p => p.Departman == department)
+            .Where(p => p.Departman == department && p.AktifMi)
             .ToListAsync();
 
         return sameDepartment;
@@ -40,6 +46,7 @@ public class PersonnelRepository : IPersonnelRepository
         {
             sortedList = await db.Personeller
                 .Include(p => p.Experiences)
+                .Where(p => p.AktifMi)
                 .OrderByDescending(p => p.Maas)
                 .ToListAsync();
         }
@@ -47,6 +54,7 @@ public class PersonnelRepository : IPersonnelRepository
         {
             sortedList = await db.Personeller
                 .Include(p => p.Experiences)
+                .Where(p => p.AktifMi)
                 .OrderBy(p => p.Maas)
                 .ToListAsync();
         }
@@ -60,8 +68,9 @@ public class PersonnelRepository : IPersonnelRepository
 
         List<Personel> found = await db.Personeller
             .Include(p => p.Experiences)
-            .Where(p => p.Ad.ToLower().Contains(lowerKeyword) ||
-                        p.Soyad.ToLower().Contains(lowerKeyword))
+            .Where(p => p.AktifMi &&
+                        (p.Ad.ToLower().Contains(lowerKeyword) ||
+                         p.Soyad.ToLower().Contains(lowerKeyword)))
             .ToListAsync();
 
         return found;

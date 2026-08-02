@@ -5,7 +5,8 @@ namespace IkProjesi.Services;
 
 public interface IPersonnelService
 {
-    Task<List<PersonelDto>> GetAllAsync();
+    Task<List<PersonelDto>> GetAllAsync(bool includeInactive = false);
+    Task<(bool success, string message)> ReactivateAsync(int id);
     Task<List<PersonelDto>> GetByDepartmentAsync(Departman department);
     Task<List<PersonelDto>> GetOrderedBySalaryAsync(bool descending);
     Task<PersonelDto?> GetByIdAsync(int id);

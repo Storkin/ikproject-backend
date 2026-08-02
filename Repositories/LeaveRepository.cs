@@ -55,6 +55,20 @@ public class LeaveRepository : ILeaveRepository
         return found;
     }
 
+    // Ayni personelin tarihleri cakisan baska bir talebi var mi?
+    // Reddedilen talepler cakisma sayilmaz.
+    public async Task<IzinTalep?> GetOverlappingAsync(int personnelId, DateTime start, DateTime end)
+    {
+        IzinTalep found = await db.IzinTalepler
+            .Where(t => t.PersonelId == personnelId &&
+                        t.Durum != IzinDurum.Reddedildi &&
+                        t.BaslangicTarihi <= end &&
+                        t.BitisTarihi >= start)
+            .FirstOrDefaultAsync();
+
+        return found;
+    }
+
     public async Task AddAsync(IzinTalep request)
     {
         await db.IzinTalepler.AddAsync(request);

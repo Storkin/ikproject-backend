@@ -23,9 +23,9 @@ public class PersonnelService : IPersonnelService
         config = configuration;
     }
 
-    public async Task<List<PersonelDto>> GetAllAsync()
+    public async Task<List<PersonelDto>> GetAllAsync(bool includeInactive = false)
     {
-        List<Personel> allPersonnel = await repo.GetAllAsync();
+        List<Personel> allPersonnel = await repo.GetAllAsync(includeInactive);
 
         List<PersonelDto> resultList = new List<PersonelDto>();
         foreach (Personel personnel in allPersonnel)
@@ -218,6 +218,9 @@ public class PersonnelService : IPersonnelService
         return true;
     }
 
+    // Personel kaydi silinmez. Isten ayrilma olarak isaretlenir ki
+    // izin, maas, zimmet gecmisi korunsun. Giris hesabi da devre disi kalir
+    // (AuthService pasif personelin girisini engelliyor).
     public async Task<bool> DeleteAsync(int id)
     {
         Personel personnel = await repo.GetByIdAsync(id);
@@ -227,8 +230,37 @@ public class PersonnelService : IPersonnelService
             return false;
         }
 
-        await repo.DeleteAsync(personnel);
+        if (personnel.AktifMi == false)
+        {
+            return false;
+        }
+
+        personnel.AktifMi = false;
+        personnel.IseCikisTarihi = DateTime.UtcNow;
+
+        await repo.UpdateAsync(personnel);
         return true;
+    }
+
+    public async Task<(bool success, string message)> ReactivateAsync(int id)
+    {
+        Personel personnel = await repo.GetByIdAsync(id);
+
+        if (personnel == null)
+        {
+            return (false, "Personel bulunamadı.");
+        }
+
+        if (personnel.AktifMi == true)
+        {
+            return (false, "Bu personel zaten aktif.");
+        }
+
+        personnel.AktifMi = true;
+        personnel.IseCikisTarihi = null;
+
+        await repo.UpdateAsync(personnel);
+        return (true, "Personel yeniden işe alındı.");
     }
 
     private PersonelDto MapToDto(Personel personnel)
@@ -246,6 +278,8 @@ public class PersonnelService : IPersonnelService
         dto.Adres = personnel.Adres;
         dto.Iban = personnel.Iban;
         dto.DogumTarihi = personnel.DogumTarihi;
+        dto.AktifMi = personnel.AktifMi;
+        dto.IseCikisTarihi = personnel.IseCikisTarihi;
 
         foreach (Experience experience in personnel.Experiences)
         {

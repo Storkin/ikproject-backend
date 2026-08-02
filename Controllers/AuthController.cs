@@ -32,13 +32,26 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginDto dto)
     {
-        TokenResponseDto? response = await authService.LoginAsync(dto);
-        if (response == null)
+        (TokenResponseDto? response, string message) result = await authService.LoginAsync(dto);
+        if (result.response == null)
         {
-            return Unauthorized("Email veya şifre hatalı.");
+            return Unauthorized(result.message);
         }
 
-        return Ok(response);
+        return Ok(result.response);
+    }
+
+    [HttpPut("resetPassword")]
+    [Authorize(Roles = "IkYonetici")]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
+    {
+        (bool success, string message) result = await authService.ResetPasswordAsync(dto);
+        if (result.success == false)
+        {
+            return BadRequest(result.message);
+        }
+
+        return Ok(result.message);
     }
 
     [HttpPut("changePassword")]

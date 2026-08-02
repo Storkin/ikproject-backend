@@ -16,6 +16,8 @@ public class PersonelDto
     public string? Adres { get; set; }
     public string? Iban { get; set; }
     public DateTime? DogumTarihi { get; set; }
+    public bool AktifMi { get; set; }
+    public DateTime? IseCikisTarihi { get; set; }
     public List<ExperienceDto> Experiences { get; set; } = new();
 }
 
