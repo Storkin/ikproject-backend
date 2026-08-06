@@ -17,7 +17,10 @@ public class AuthController : ControllerBase
         authService = service;
     }
 
+    // Hesap olusturma yetkisi sadece IK'da. Aksi halde disaridan
+    // herkes kendine IkYonetici hesabi acip tum maaslari gorebilirdi.
     [HttpPost("register")]
+    [Authorize(Roles = "IkYonetici")]
     public async Task<IActionResult> Register([FromBody] RegisterDto dto)
     {
         TokenResponseDto? response = await authService.RegisterAsync(dto);
