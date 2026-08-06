@@ -123,20 +123,53 @@ public class PersonnelService : IPersonnelService
         await repo.AddAsync(newPersonnel);
         await SaveExperiencesAsync(newPersonnel, dto.Experiences);
 
-        User existingUser = await userRepo.GetByEmailAsync(newPersonnel.Email);
-        if (existingUser == null)
-        {
-            Calisan account = new Calisan();
-            account.Email = newPersonnel.Email;
-            account.PasswordHash = BCrypt.Net.BCrypt.HashPassword(BuildDefaultPassword(newPersonnel.Ad));
-            account.Rol = "Calisan";
-            account.PersonelId = newPersonnel.Id;
-
-            await userRepo.AddAsync(account);
-        }
+        await CreateOrRelinkAccountAsync(newPersonnel);
 
         PersonelDto result = MapToDto(newPersonnel);
         return result;
+    }
+
+    // Yeni personel icin giris hesabi acar.
+    // Ayni email'e ait hesap zaten varsa ve o hesap isten ayrilmis (pasif)
+    // bir personele bagliysa, hesap yeni kayda baglanip sifresi varsayilana
+    // dondurulur. Aksi halde eski hesap yeni personeli sisteme sokamaz.
+    private async Task CreateOrRelinkAccountAsync(Personel personnel)
+    {
+        string defaultPassword = BuildDefaultPassword(personnel.Ad);
+        User existingUser = await userRepo.GetByEmailAsync(personnel.Email);
+
+        if (existingUser == null)
+        {
+            Calisan account = new Calisan();
+            account.Email = personnel.Email;
+            account.PasswordHash = BCrypt.Net.BCrypt.HashPassword(defaultPassword);
+            account.Rol = "Calisan";
+            account.PersonelId = personnel.Id;
+            account.IsFirstLogin = true;
+
+            await userRepo.AddAsync(account);
+            return;
+        }
+
+        if (existingUser is Calisan == false)
+        {
+            return;
+        }
+
+        Calisan employeeAccount = (Calisan)existingUser;
+        Personel linkedPersonnel = await repo.GetByIdAsync(employeeAccount.PersonelId);
+
+        bool linkIsStale = linkedPersonnel == null || linkedPersonnel.AktifMi == false;
+        if (linkIsStale == false)
+        {
+            return;
+        }
+
+        employeeAccount.PersonelId = personnel.Id;
+        employeeAccount.PasswordHash = BCrypt.Net.BCrypt.HashPassword(defaultPassword);
+        employeeAccount.IsFirstLogin = true;
+
+        await userRepo.UpdateAsync(employeeAccount);
     }
 
     private string BuildDefaultPassword(string ad)

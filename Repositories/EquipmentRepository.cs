@@ -13,6 +13,16 @@ public class EquipmentRepository : IEquipmentRepository
         db = context;
     }
 
+    public async Task<List<Zimmet>> GetAllAsync()
+    {
+        List<Zimmet> found = await db.Zimmetler
+            .Include(z => z.Personel)
+            .OrderByDescending(z => z.ZimmetTarihi)
+            .ToListAsync();
+
+        return found;
+    }
+
     public async Task<List<Zimmet>> GetByPersonnelIdAsync(int personnelId)
     {
         List<Zimmet> found = await db.Zimmetler

@@ -15,6 +15,20 @@ public class EquipmentService : IEquipmentService
         personnelRepo = personnelRepository;
     }
 
+    public async Task<List<ZimmetDto>> GetAllAsync()
+    {
+        List<Zimmet> found = await equipmentRepo.GetAllAsync();
+
+        List<ZimmetDto> resultList = new List<ZimmetDto>();
+        foreach (Zimmet equipment in found)
+        {
+            ZimmetDto dto = MapToDto(equipment);
+            resultList.Add(dto);
+        }
+
+        return resultList;
+    }
+
     public async Task<List<ZimmetDto>> GetByPersonnelIdAsync(int personnelId)
     {
         List<Zimmet> found = await equipmentRepo.GetByPersonnelIdAsync(personnelId);

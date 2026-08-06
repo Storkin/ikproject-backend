@@ -42,6 +42,14 @@ public class EquipmentController : ControllerBase
         return Ok(result.message);
     }
 
+    [HttpGet("getAllEquipment")]
+    [Authorize(Roles = "IkYonetici")]
+    public async Task<IActionResult> GetAll()
+    {
+        List<ZimmetDto> allEquipment = await equipmentService.GetAllAsync();
+        return Ok(allEquipment);
+    }
+
     [HttpGet("getByPersonnel/{personnelId}")]
     [Authorize(Roles = "IkYonetici")]
     public async Task<IActionResult> GetByPersonnel(int personnelId)

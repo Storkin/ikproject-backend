@@ -12,8 +12,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
-        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        options.JsonSerializerOptions.Converters.Add(new IkProjesi.Helpers.TolerantEnumConverterFactory());
         options.JsonSerializerOptions.Converters.Add(new IkProjesi.Helpers.DateOnlyJsonConverter());
+        options.JsonSerializerOptions.Converters.Add(new IkProjesi.Helpers.NullableDateOnlyJsonConverter());
+        // Frontend sayilari metin olarak gonderebiliyor ("42000"), kabul edilsin.
+        options.JsonSerializerOptions.NumberHandling = JsonNumberHandling.AllowReadingFromString;
     });
 builder.Services.AddOpenApi();
 
