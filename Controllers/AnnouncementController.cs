@@ -18,7 +18,7 @@ public class AnnouncementController : ControllerBase
     }
 
     [HttpGet("getAnnouncements")]
-    [Authorize(Roles = "IkYonetici,Calisan")]
+    [Authorize(Roles = "IkYonetici,Admin,Calisan")]
     public async Task<IActionResult> GetAll()
     {
         List<DuyuruDto> allAnnouncements = await announcementService.GetAllAsync();
@@ -26,7 +26,7 @@ public class AnnouncementController : ControllerBase
     }
 
     [HttpPost("createAnnouncement")]
-    [Authorize(Roles = "IkYonetici")]
+    [Authorize(Roles = "IkYonetici,Admin")]
     public async Task<IActionResult> Add([FromBody] DuyuruOlusturDto dto)
     {
         DuyuruDto created = await announcementService.AddAsync(dto);
@@ -34,7 +34,7 @@ public class AnnouncementController : ControllerBase
     }
 
     [HttpPut("updateAnnouncement/{id}")]
-    [Authorize(Roles = "IkYonetici")]
+    [Authorize(Roles = "IkYonetici,Admin")]
     public async Task<IActionResult> Update(int id, [FromBody] DuyuruUpdateDto dto)
     {
         DuyuruDto? updated = await announcementService.UpdateAsync(id, dto);
@@ -46,7 +46,7 @@ public class AnnouncementController : ControllerBase
     }
 
     [HttpDelete("deleteAnnouncement/{id}")]
-    [Authorize(Roles = "IkYonetici")]
+    [Authorize(Roles = "IkYonetici,Admin")]
     public async Task<IActionResult> Delete(int id)
     {
         bool success = await announcementService.DeleteAsync(id);

@@ -19,7 +19,7 @@ public class EducationController : ControllerBase
     }
 
     [HttpPost("add")]
-    [Authorize(Roles = "IkYonetici")]
+    [Authorize(Roles = "IkYonetici,Admin")]
     public async Task<IActionResult> Add([FromBody] EgitimOlusturDto dto)
     {
         (bool success, string message) result = await educationService.AddAsync(dto);
@@ -31,7 +31,7 @@ public class EducationController : ControllerBase
     }
 
     [HttpPut("update/{id}")]
-    [Authorize(Roles = "IkYonetici")]
+    [Authorize(Roles = "IkYonetici,Admin")]
     public async Task<IActionResult> Update(int id, [FromBody] EgitimGuncelleDto dto)
     {
         (bool success, string message) result = await educationService.UpdateAsync(id, dto);
@@ -43,7 +43,7 @@ public class EducationController : ControllerBase
     }
 
     [HttpDelete("delete/{id}")]
-    [Authorize(Roles = "IkYonetici")]
+    [Authorize(Roles = "IkYonetici,Admin")]
     public async Task<IActionResult> Delete(int id)
     {
         (bool success, string message) result = await educationService.DeleteAsync(id);
@@ -55,7 +55,7 @@ public class EducationController : ControllerBase
     }
 
     [HttpGet("getByPersonnel/{personnelId}")]
-    [Authorize(Roles = "IkYonetici")]
+    [Authorize(Roles = "IkYonetici,Admin")]
     public async Task<IActionResult> GetByPersonnel(int personnelId)
     {
         List<EgitimDto> found = await educationService.GetByPersonnelIdAsync(personnelId);

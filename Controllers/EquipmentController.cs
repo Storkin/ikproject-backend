@@ -19,7 +19,7 @@ public class EquipmentController : ControllerBase
     }
 
     [HttpPost("assign")]
-    [Authorize(Roles = "IkYonetici")]
+    [Authorize(Roles = "IkYonetici,Admin")]
     public async Task<IActionResult> Assign([FromBody] ZimmetOlusturDto dto)
     {
         (bool success, string message) result = await equipmentService.AssignAsync(dto);
@@ -31,7 +31,7 @@ public class EquipmentController : ControllerBase
     }
 
     [HttpPut("return/{id}")]
-    [Authorize(Roles = "IkYonetici")]
+    [Authorize(Roles = "IkYonetici,Admin")]
     public async Task<IActionResult> Return(int id)
     {
         (bool success, string message) result = await equipmentService.ReturnAsync(id);
@@ -43,7 +43,7 @@ public class EquipmentController : ControllerBase
     }
 
     [HttpGet("getAllEquipment")]
-    [Authorize(Roles = "IkYonetici")]
+    [Authorize(Roles = "IkYonetici,Admin")]
     public async Task<IActionResult> GetAll()
     {
         List<ZimmetDto> allEquipment = await equipmentService.GetAllAsync();
@@ -51,7 +51,7 @@ public class EquipmentController : ControllerBase
     }
 
     [HttpGet("getByPersonnel/{personnelId}")]
-    [Authorize(Roles = "IkYonetici")]
+    [Authorize(Roles = "IkYonetici,Admin")]
     public async Task<IActionResult> GetByPersonnel(int personnelId)
     {
         List<ZimmetDto> found = await equipmentService.GetByPersonnelIdAsync(personnelId);
@@ -59,7 +59,7 @@ public class EquipmentController : ControllerBase
     }
 
     [HttpDelete("delete/{id}")]
-    [Authorize(Roles = "IkYonetici")]
+    [Authorize(Roles = "IkYonetici,Admin")]
     public async Task<IActionResult> Delete(int id)
     {
         (bool success, string message) result = await equipmentService.DeleteAsync(id);

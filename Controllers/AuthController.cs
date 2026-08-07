@@ -20,7 +20,7 @@ public class AuthController : ControllerBase
     // Hesap olusturma yetkisi sadece IK'da. Aksi halde disaridan
     // herkes kendine IkYonetici hesabi acip tum maaslari gorebilirdi.
     [HttpPost("register")]
-    [Authorize(Roles = "IkYonetici")]
+    [Authorize(Roles = "IkYonetici,Admin")]
     public async Task<IActionResult> Register([FromBody] RegisterDto dto)
     {
         TokenResponseDto? response = await authService.RegisterAsync(dto);
@@ -45,7 +45,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPut("resetPassword")]
-    [Authorize(Roles = "IkYonetici")]
+    [Authorize(Roles = "IkYonetici,Admin")]
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
     {
         (bool success, string message) result = await authService.ResetPasswordAsync(dto);

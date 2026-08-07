@@ -20,7 +20,7 @@ public class PersonnelController : ControllerBase
     }
 
     [HttpGet("getPersonnel")]
-    [Authorize(Roles = "IkYonetici")]
+    [Authorize(Roles = "IkYonetici,Admin")]
     public async Task<IActionResult> GetAll([FromQuery] bool includeInactive = false)
     {
         List<PersonelDto> allPersonnel = await personnelService.GetAllAsync(includeInactive);
@@ -28,7 +28,7 @@ public class PersonnelController : ControllerBase
     }
 
     [HttpPut("reactivatePersonnel/{id}")]
-    [Authorize(Roles = "IkYonetici")]
+    [Authorize(Roles = "IkYonetici,Admin")]
     public async Task<IActionResult> Reactivate(int id)
     {
         (bool success, string message) result = await personnelService.ReactivateAsync(id);
@@ -40,7 +40,7 @@ public class PersonnelController : ControllerBase
     }
 
     [HttpGet("getById/{id}")]
-    [Authorize(Roles = "IkYonetici")]
+    [Authorize(Roles = "IkYonetici,Admin")]
     public async Task<IActionResult> GetById(int id)
     {
         PersonelDto found = await personnelService.GetByIdAsync(id);
@@ -52,7 +52,7 @@ public class PersonnelController : ControllerBase
     }
 
     [HttpGet("getByDepartment/{department}")]
-    [Authorize(Roles = "IkYonetici")]
+    [Authorize(Roles = "IkYonetici,Admin")]
     public async Task<IActionResult> GetByDepartment(Departman department)
     {
         List<PersonelDto> sameDepartment = await personnelService.GetByDepartmentAsync(department);
@@ -60,7 +60,7 @@ public class PersonnelController : ControllerBase
     }
 
     [HttpGet("getBySalary")]
-    [Authorize(Roles = "IkYonetici")]
+    [Authorize(Roles = "IkYonetici,Admin")]
     public async Task<IActionResult> GetBySalary([FromQuery] bool descending = true)
     {
         List<PersonelDto> sortedList = await personnelService.GetOrderedBySalaryAsync(descending);
@@ -68,7 +68,7 @@ public class PersonnelController : ControllerBase
     }
 
     [HttpGet("search")]
-    [Authorize(Roles = "IkYonetici")]
+    [Authorize(Roles = "IkYonetici,Admin")]
     public async Task<IActionResult> Search([FromQuery] string keyword)
     {
         if (string.IsNullOrWhiteSpace(keyword))
@@ -81,7 +81,7 @@ public class PersonnelController : ControllerBase
     }
 
     [HttpPost("addPersonnel")]
-    [Authorize(Roles = "IkYonetici")]
+    [Authorize(Roles = "IkYonetici,Admin")]
     public async Task<IActionResult> Add([FromBody] PersonelCreateDto dto)
     {
         PersonelDto created = await personnelService.AddAsync(dto);
@@ -89,7 +89,7 @@ public class PersonnelController : ControllerBase
     }
 
     [HttpPut("updatePersonnel/{id}")]
-    [Authorize(Roles = "IkYonetici")]
+    [Authorize(Roles = "IkYonetici,Admin")]
     public async Task<IActionResult> Update(int id, [FromBody] PersonelUpdateDto dto)
     {
         PersonelDto? updated = await personnelService.UpdateAsync(id, dto);
@@ -101,7 +101,7 @@ public class PersonnelController : ControllerBase
     }
 
     [HttpDelete("deletePersonnel/{id}")]
-    [Authorize(Roles = "IkYonetici")]
+    [Authorize(Roles = "IkYonetici,Admin")]
     public async Task<IActionResult> Delete(int id)
     {
         bool success = await personnelService.DeleteAsync(id);

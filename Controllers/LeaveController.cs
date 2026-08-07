@@ -19,7 +19,7 @@ public class LeaveController : ControllerBase
     }
 
     [HttpGet("getLeaves")]
-    [Authorize(Roles = "IkYonetici")]
+    [Authorize(Roles = "IkYonetici,Admin")]
     public async Task<IActionResult> GetAll()
     {
         List<IzinTalepDto> allRequests = await leaveService.GetAllAsync();
@@ -27,7 +27,7 @@ public class LeaveController : ControllerBase
     }
 
     [HttpGet("getPending")]
-    [Authorize(Roles = "IkYonetici")]
+    [Authorize(Roles = "IkYonetici,Admin")]
     public async Task<IActionResult> GetPending()
     {
         List<IzinTalepDto> pending = await leaveService.GetPendingAsync();
@@ -35,7 +35,7 @@ public class LeaveController : ControllerBase
     }
 
     [HttpGet("getPersonnelHistory/{personnelId}")]
-    [Authorize(Roles = "IkYonetici")]
+    [Authorize(Roles = "IkYonetici,Admin")]
     public async Task<IActionResult> GetPersonnelHistory(int personnelId)
     {
         IzinOzetDto summary = await leaveService.GetSummaryAsync(personnelId);
@@ -47,7 +47,7 @@ public class LeaveController : ControllerBase
     }
 
     [HttpGet("getLeaveBalances/{personnelId}")]
-    [Authorize(Roles = "IkYonetici")]
+    [Authorize(Roles = "IkYonetici,Admin")]
     public async Task<IActionResult> GetLeaveBalances(int personnelId)
     {
         List<IzinHakkiDto> balances = await leaveService.GetBalanceHistoryAsync(personnelId);
@@ -55,7 +55,7 @@ public class LeaveController : ControllerBase
     }
 
     [HttpPut("approveLeave/{id}")]
-    [Authorize(Roles = "IkYonetici")]
+    [Authorize(Roles = "IkYonetici,Admin")]
     public async Task<IActionResult> Approve(int id)
     {
         (bool success, string message) result = await leaveService.ApproveAsync(id);
@@ -67,7 +67,7 @@ public class LeaveController : ControllerBase
     }
 
     [HttpPut("rejectLeave/{id}")]
-    [Authorize(Roles = "IkYonetici")]
+    [Authorize(Roles = "IkYonetici,Admin")]
     public async Task<IActionResult> Reject(int id)
     {
         (bool success, string message) result = await leaveService.RejectAsync(id);

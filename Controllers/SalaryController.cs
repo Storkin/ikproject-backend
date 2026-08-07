@@ -19,7 +19,7 @@ public class SalaryController : ControllerBase
     }
 
     [HttpPost("add")]
-    [Authorize(Roles = "IkYonetici")]
+    [Authorize(Roles = "IkYonetici,Admin")]
     public async Task<IActionResult> Add([FromBody] MaasKaydiOlusturDto dto)
     {
         (bool success, string message) result = await salaryService.AddAsync(dto);
@@ -31,7 +31,7 @@ public class SalaryController : ControllerBase
     }
 
     [HttpDelete("delete/{id}")]
-    [Authorize(Roles = "IkYonetici")]
+    [Authorize(Roles = "IkYonetici,Admin")]
     public async Task<IActionResult> Delete(int id)
     {
         (bool success, string message) result = await salaryService.DeleteAsync(id);
@@ -43,7 +43,7 @@ public class SalaryController : ControllerBase
     }
 
     [HttpGet("getByPersonnel/{personnelId}")]
-    [Authorize(Roles = "IkYonetici")]
+    [Authorize(Roles = "IkYonetici,Admin")]
     public async Task<IActionResult> GetByPersonnel(int personnelId)
     {
         List<MaasKaydiDto> found = await salaryService.GetByPersonnelIdAsync(personnelId);
