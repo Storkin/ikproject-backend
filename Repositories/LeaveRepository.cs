@@ -69,6 +69,26 @@ public class LeaveRepository : ILeaveRepository
         return found;
     }
 
+    // Yerine bakacak kisi isten ayrildiginda, HENUZ ONAYLANMAMIS taleplerdeki
+    // bagi kopariyoruz. Onaylanmis/reddedilmis kayitlar tarihsel kayit oldugu
+    // icin oldugu gibi birakilir.
+    public async Task ClearSubstituteFromPendingAsync(int substituteId)
+    {
+        List<IzinTalep> bekleyenler = await db.IzinTalepler
+            .Where(t => t.SubstituteId == substituteId && t.Durum == IzinDurum.Beklemede)
+            .ToListAsync();
+
+        foreach (IzinTalep request in bekleyenler)
+        {
+            request.SubstituteId = null;
+        }
+
+        if (bekleyenler.Count > 0)
+        {
+            await db.SaveChangesAsync();
+        }
+    }
+
     public async Task AddAsync(IzinTalep request)
     {
         await db.IzinTalepler.AddAsync(request);

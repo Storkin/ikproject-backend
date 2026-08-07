@@ -9,17 +9,20 @@ public class PersonnelService : IPersonnelService
     private readonly IPersonnelRepository repo;
     private readonly IUserRepository userRepo;
     private readonly IExperienceRepository experienceRepo;
+    private readonly ILeaveRepository leaveRepo;
     private readonly IConfiguration config;
 
     public PersonnelService(
         IPersonnelRepository repository,
         IUserRepository userRepository,
         IExperienceRepository experienceRepository,
+        ILeaveRepository leaveRepository,
         IConfiguration configuration)
     {
         repo = repository;
         userRepo = userRepository;
         experienceRepo = experienceRepository;
+        leaveRepo = leaveRepository;
         config = configuration;
     }
 
@@ -272,6 +275,11 @@ public class PersonnelService : IPersonnelService
         personnel.IseCikisTarihi = DateTime.UtcNow;
 
         await repo.UpdateAsync(personnel);
+
+        // Isten ayrilan kisi, bekleyen izin taleplerinde "yerine bakacak kisi"
+        // olarak kalmamali. Onaylanmis gecmis kayitlar korunur.
+        await leaveRepo.ClearSubstituteFromPendingAsync(id);
+
         return true;
     }
 

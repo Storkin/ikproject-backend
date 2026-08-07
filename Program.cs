@@ -110,3 +110,7 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+// Entegrasyon testlerinde WebApplicationFactory<Program> kullanilabilmesi icin.
+// Top-level statement'larda Program sinifi internal uretilir, testler goremez.
+public partial class Program { }
