@@ -126,9 +126,10 @@ public class PersonnelService : IPersonnelService
         await repo.AddAsync(newPersonnel);
         await SaveExperiencesAsync(newPersonnel, dto.Experiences);
 
-        await CreateOrRelinkAccountAsync(newPersonnel);
+        string geciciSifre = await CreateOrRelinkAccountAsync(newPersonnel);
 
         PersonelDto result = MapToDto(newPersonnel);
+        result.GeciciSifre = geciciSifre;
         return result;
     }
 
@@ -136,7 +137,11 @@ public class PersonnelService : IPersonnelService
     // Ayni email'e ait hesap zaten varsa ve o hesap isten ayrilmis (pasif)
     // bir personele bagliysa, hesap yeni kayda baglanip sifresi varsayilana
     // dondurulur. Aksi halde eski hesap yeni personeli sisteme sokamaz.
-    private async Task CreateOrRelinkAccountAsync(Personel personnel)
+    /// <returns>
+    /// Hesaba atanan gecici sifre. Zaten aktif bir hesap varsa (sifreye
+    /// dokunulmadiysa) null doner.
+    /// </returns>
+    private async Task<string?> CreateOrRelinkAccountAsync(Personel personnel)
     {
         string defaultPassword = BuildDefaultPassword(personnel.Ad);
         User existingUser = await userRepo.GetByEmailAsync(personnel.Email);
@@ -151,12 +156,12 @@ public class PersonnelService : IPersonnelService
             account.IsFirstLogin = true;
 
             await userRepo.AddAsync(account);
-            return;
+            return defaultPassword;
         }
 
         if (existingUser is Calisan == false)
         {
-            return;
+            return null;
         }
 
         Calisan employeeAccount = (Calisan)existingUser;
@@ -165,7 +170,7 @@ public class PersonnelService : IPersonnelService
         bool linkIsStale = linkedPersonnel == null || linkedPersonnel.AktifMi == false;
         if (linkIsStale == false)
         {
-            return;
+            return null;
         }
 
         employeeAccount.PersonelId = personnel.Id;
@@ -173,6 +178,7 @@ public class PersonnelService : IPersonnelService
         employeeAccount.IsFirstLogin = true;
 
         await userRepo.UpdateAsync(employeeAccount);
+        return defaultPassword;
     }
 
     private string BuildDefaultPassword(string ad)

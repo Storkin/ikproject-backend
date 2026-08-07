@@ -108,6 +108,29 @@ public class AuthService : IAuthService
         return (true, "Şifre sıfırlandı. Yeni şifre: " + defaultPassword);
     }
 
+    // IK/Admin bir kullaniciya kendi belirledigi sifreyi atar.
+    // Mevcut sifreyi bilmeye gerek yoktur; sifre okunamadigi (hash'lendigi)
+    // icin kurtarma yolu budur. Kullanici ilk girisinde degistirmeye yonlendirilir.
+    public async Task<(bool success, string message)> SetPasswordAsync(SetPasswordDto dto)
+    {
+        User user = await userRepo.GetByEmailAsync(dto.Email);
+        if (user == null)
+        {
+            return (false, "Bu email ile kayıtlı kullanıcı bulunamadı.");
+        }
+
+        if (string.IsNullOrWhiteSpace(dto.NewPassword) || dto.NewPassword.Trim().Length < 6)
+        {
+            return (false, "Şifre en az 6 karakter olmalı.");
+        }
+
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+        user.IsFirstLogin = true;
+        await userRepo.UpdateAsync(user);
+
+        return (true, "Şifre güncellendi. Kullanıcı ilk girişinde değiştirmeye yönlendirilecek.");
+    }
+
     private async Task<string> BuildDefaultPasswordAsync(User user)
     {
         string baseName;

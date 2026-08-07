@@ -162,6 +162,75 @@ public class AuthTests : IntegrationTestBase
     }
 
     [Fact]
+    public async Task SetPassword_IkSectigiSifreyiAtar_KullaniciOnunlaGirer()
+    {
+        ApiClient ik = await Fixture.IkClientAsync();
+        const string secilenSifre = "SirketSifre2026!";
+
+        HttpResponseMessage response = await ik.PutAsync("/Auth/setPassword",
+            new { email = TestUsers.CalisanEmail, newPassword = secilenSifre });
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        LoginResponse login = (await (await Fixture.NewClient().PostAsync("/Auth/login",
+            new { email = TestUsers.CalisanEmail, password = secilenSifre }))
+            .Content.ReadFromJsonAsync<LoginResponse>(ApiClient.JsonOptions))!;
+
+        login.User.IsFirstLogin.Should().BeTrue("kullanici kendi sifresini belirlemeye yonlendirilmeli");
+
+        (await Fixture.NewClient().PostAsync("/Auth/login",
+            new { email = TestUsers.CalisanEmail, password = TestUsers.CalisanPassword }))
+            .StatusCode.Should().Be(HttpStatusCode.Unauthorized, "eski sifre gecersizlesmeli");
+    }
+
+    [Fact]
+    public async Task SetPassword_AdminDeYapabilir()
+    {
+        ApiClient admin = await Fixture.AdminClientAsync();
+
+        HttpResponseMessage response = await admin.PutAsync("/Auth/setPassword",
+            new { email = TestUsers.CalisanEmail, newPassword = "AdminBelirledi1!" });
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData("kisa")]
+    public async Task SetPassword_ZayifSifre_Reddedilir(string sifre)
+    {
+        ApiClient ik = await Fixture.IkClientAsync();
+
+        HttpResponseMessage response = await ik.PutAsync("/Auth/setPassword",
+            new { email = TestUsers.CalisanEmail, newPassword = sifre });
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task SetPassword_CalisanCagiramaz()
+    {
+        ApiClient calisan = await Fixture.CalisanClientAsync();
+
+        HttpResponseMessage response = await calisan.PutAsync("/Auth/setPassword",
+            new { email = TestUsers.IkEmail, newPassword = "YetkiYukseltme1!" });
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task ResetPassword_AdminDeYapabilir()
+    {
+        ApiClient admin = await Fixture.AdminClientAsync();
+
+        HttpResponseMessage response = await admin.PutAsync("/Auth/resetPassword",
+            new { email = TestUsers.CalisanEmail });
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    [Fact]
     public async Task ResetPassword_CalisanCagiramaz()
     {
         ApiClient calisan = await Fixture.CalisanClientAsync();

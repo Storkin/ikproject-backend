@@ -19,6 +19,10 @@ public class PersonelDto
     public bool AktifMi { get; set; }
     public DateTime? IseCikisTarihi { get; set; }
     public List<ExperienceDto> Experiences { get; set; } = new();
+
+    // Sadece personel ILK eklendiginde doldurulur; listeleme yanitlarinda null'dir.
+    // Sifreler hash'lendigi icin sonradan okunamaz, IK'nin gorebilecegi tek an budur.
+    public string? GeciciSifre { get; set; }
 }
 
 public class PersonelCreateDto

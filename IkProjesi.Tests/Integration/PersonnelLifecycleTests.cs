@@ -56,6 +56,35 @@ public class PersonnelLifecycleTests : IntegrationTestBase
     }
 
     [Fact]
+    public async Task PersonelEkleme_UretilenGeciciSifreyiYanittaDoner()
+    {
+        ApiClient ik = await Fixture.IkClientAsync();
+
+        HttpResponseMessage response = await ik.PostAsync("/Personnel/addPersonnel",
+            YeniPersonel(ad: "mustafa", email: "mustafa@test.com"));
+
+        PersonelResponse olusan = (await response.Content.ReadFromJsonAsync<PersonelResponse>(ApiClient.JsonOptions))!;
+        olusan.GeciciSifre.Should().Be("Mustafa123!",
+            "IK acilan hesabin sifresini tahmin etmek zorunda kalmamali");
+
+        (await Fixture.NewClient().PostAsync("/Auth/login",
+            new { email = "mustafa@test.com", password = olusan.GeciciSifre }))
+            .StatusCode.Should().Be(HttpStatusCode.OK, "donen sifre gercekten calismali");
+    }
+
+    [Fact]
+    public async Task PersonelListeleme_GeciciSifreAlaniniIcermez()
+    {
+        ApiClient ik = await Fixture.IkClientAsync();
+        await ik.PostAsync("/Personnel/addPersonnel", YeniPersonel());
+
+        List<PersonelResponse> liste = await ik.GetJsonAsync<List<PersonelResponse>>("/Personnel/getPersonnel");
+
+        liste.Should().OnlyContain(p => p.GeciciSifre == null,
+            "gecici sifre yalnizca olusturma aninda gorunmeli");
+    }
+
+    [Fact]
     public async Task PersonelEkleme_OtomatikGirisHesabiAcar()
     {
         ApiClient ik = await Fixture.IkClientAsync();

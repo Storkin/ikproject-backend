@@ -79,7 +79,8 @@ public record PersonelResponse(
     string? DogumTarihi,
     bool AktifMi,
     string? IseCikisTarihi,
-    List<ExperienceResponse> Experiences);
+    List<ExperienceResponse> Experiences,
+    string? GeciciSifre);
 
 public record ExperienceResponse(string Company, string Role, string Duration);
 

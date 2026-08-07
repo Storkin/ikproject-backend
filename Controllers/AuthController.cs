@@ -44,6 +44,19 @@ public class AuthController : ControllerBase
         return Ok(result.response);
     }
 
+    [HttpPut("setPassword")]
+    [Authorize(Roles = "IkYonetici,Admin")]
+    public async Task<IActionResult> SetPassword([FromBody] SetPasswordDto dto)
+    {
+        (bool success, string message) result = await authService.SetPasswordAsync(dto);
+        if (result.success == false)
+        {
+            return BadRequest(result.message);
+        }
+
+        return Ok(result.message);
+    }
+
     [HttpPut("resetPassword")]
     [Authorize(Roles = "IkYonetici,Admin")]
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
