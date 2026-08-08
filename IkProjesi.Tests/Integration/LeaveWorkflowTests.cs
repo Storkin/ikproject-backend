@@ -391,6 +391,47 @@ public class LeaveWorkflowTests : IntegrationTestBase
         ozet.KullanilanGun.Should().Be(5, "es zamanli onay bakiyeyi iki kez dusurmemeli");
     }
 
+    // ---------- SIRALAMA ----------
+
+    [Fact]
+    public async Task BekleyenTalepler_TarihtenBagimsizEnUsteGelir()
+    {
+        ApiClient calisan = await Fixture.CalisanClientAsync();
+        ApiClient ik = await Fixture.IkClientAsync();
+
+        // Once eski tarihli bir talep acilip sonuclandirilir
+        await calisan.PostAsync("/Leave/createLeave", Talep("2026-03-01", "2026-03-03", "Mazeret"));
+        await ik.PutAsync($"/Leave/approveLeave/{await BekleyenTalepIdAsync(ik)}");
+
+        await calisan.PostAsync("/Leave/createLeave", Talep("2026-04-01", "2026-04-03", "Mazeret"));
+        await ik.PutAsync($"/Leave/rejectLeave/{await BekleyenTalepIdAsync(ik)}");
+
+        // Sonra ileri tarihli, henuz sonuclanmamis bir talep
+        await calisan.PostAsync("/Leave/createLeave", Talep("2026-12-01", "2026-12-03", "Mazeret"));
+
+        List<IzinTalepResponse> hepsi = await ik.GetJsonAsync<List<IzinTalepResponse>>("/Leave/getLeaves");
+
+        hepsi.Should().HaveCount(3);
+        hepsi[0].Durum.Should().Be("Beklemede",
+            "onay bekleyen talep, tarihi ne olursa olsun listenin basinda olmali");
+        hepsi.Skip(1).Should().OnlyContain(t => t.Durum != "Beklemede");
+    }
+
+    [Fact]
+    public async Task CalisaninKendiListesindeDe_BekleyenlerUsttedir()
+    {
+        ApiClient calisan = await Fixture.CalisanClientAsync();
+        ApiClient ik = await Fixture.IkClientAsync();
+
+        await calisan.PostAsync("/Leave/createLeave", Talep("2026-03-01", "2026-03-03", "Mazeret"));
+        await ik.PutAsync($"/Leave/approveLeave/{await BekleyenTalepIdAsync(ik)}");
+        await calisan.PostAsync("/Leave/createLeave", Talep("2026-11-01", "2026-11-03", "Mazeret"));
+
+        List<IzinTalepResponse> benim = await calisan.GetJsonAsync<List<IzinTalepResponse>>("/Leave/getMyLeaves");
+
+        benim[0].Durum.Should().Be("Beklemede");
+    }
+
     // ---------- YETKI ----------
 
     [Fact]

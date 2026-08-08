@@ -13,11 +13,17 @@ public class LeaveRepository : ILeaveRepository
         db = context;
     }
 
+    // Onay bekleyen talepler tarihinden bagimsiz olarak en uste gelir;
+    // IK'nin islem yapmasi gereken kayitlar listenin dibinde kaybolmasin.
+    // Ayni grup icinde en yeni talep once gosterilir.
     public async Task<List<IzinTalep>> GetAllAsync()
     {
         List<IzinTalep> allRequests = await db.IzinTalepler
             .Include(t => t.Personel)
             .Include(t => t.Substitute)
+            .OrderBy(t => t.Durum == IzinDurum.Beklemede ? 0 : 1)
+            .ThenByDescending(t => t.TalepTarihi)
+            .ThenByDescending(t => t.Id)
             .ToListAsync();
 
         return allRequests;
@@ -29,6 +35,8 @@ public class LeaveRepository : ILeaveRepository
             .Include(t => t.Personel)
             .Include(t => t.Substitute)
             .Where(t => t.Durum == IzinDurum.Beklemede)
+            .OrderByDescending(t => t.TalepTarihi)
+            .ThenByDescending(t => t.Id)
             .ToListAsync();
 
         return pendingRequests;
@@ -40,6 +48,9 @@ public class LeaveRepository : ILeaveRepository
             .Include(t => t.Personel)
             .Include(t => t.Substitute)
             .Where(t => t.PersonelId == personnelId)
+            .OrderBy(t => t.Durum == IzinDurum.Beklemede ? 0 : 1)
+            .ThenByDescending(t => t.TalepTarihi)
+            .ThenByDescending(t => t.Id)
             .ToListAsync();
 
         return personnelRequests;
