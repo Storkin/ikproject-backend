@@ -76,39 +76,55 @@ public class LeaveService : ILeaveService
     public async Task<List<IzinTalepDto>> GetAllAsync()
     {
         List<IzinTalep> allRequests = await leaveRepo.GetAllAsync();
-
-        List<IzinTalepDto> resultList = new List<IzinTalepDto>();
-        foreach (IzinTalep request in allRequests)
-        {
-            IzinTalepDto dto = MapToDto(request);
-            resultList.Add(dto);
-        }
-
-        return resultList;
+        return await MapListWithBalanceAsync(allRequests);
     }
 
     public async Task<List<IzinTalepDto>> GetPendingAsync()
     {
         List<IzinTalep> pending = await leaveRepo.GetPendingAsync();
-
-        List<IzinTalepDto> resultList = new List<IzinTalepDto>();
-        foreach (IzinTalep request in pending)
-        {
-            IzinTalepDto dto = MapToDto(request);
-            resultList.Add(dto);
-        }
-
-        return resultList;
+        return await MapListWithBalanceAsync(pending);
     }
 
     public async Task<List<IzinTalepDto>> GetByPersonnelIdAsync(int personnelId)
     {
         List<IzinTalep> personnelRequests = await leaveRepo.GetByPersonnelIdAsync(personnelId);
+        return await MapListWithBalanceAsync(personnelRequests);
+    }
+
+    // Liste ekranlarinda IK'nin "kimin talebi, ne kadar hakki kalmis" sorusunu
+    // tek bakista gorebilmesi icin her talebe kisinin guncel bakiyesi eklenir.
+    // Bakiyeler tek sorguda cekilip sozluge alinir (talep basina sorgu atilmaz).
+    private async Task<List<IzinTalepDto>> MapListWithBalanceAsync(List<IzinTalep> requests)
+    {
+        int currentYear = DateTime.UtcNow.Year;
+        List<IzinHakki> balances = await balanceRepo.GetByYearAsync(currentYear);
+
+        Dictionary<int, IzinHakki> balanceByPersonnel = new Dictionary<int, IzinHakki>();
+        foreach (IzinHakki balance in balances)
+        {
+            balanceByPersonnel[balance.PersonelId] = balance;
+        }
+
+        int defaultEntitlement = int.Parse(config["PersonelAyarlari:VarsayilanIzinHakki"]);
 
         List<IzinTalepDto> resultList = new List<IzinTalepDto>();
-        foreach (IzinTalep request in personnelRequests)
+        foreach (IzinTalep request in requests)
         {
             IzinTalepDto dto = MapToDto(request);
+
+            IzinHakki? balance;
+            if (balanceByPersonnel.TryGetValue(request.PersonelId, out balance))
+            {
+                dto.ToplamHak = balance.HakEdilen + balance.Devreden;
+                dto.KalanGun = dto.ToplamHak - balance.Kullanilan;
+            }
+            else
+            {
+                // Bu yil icin henuz kayit acilmamis: varsayilan hak gecerlidir.
+                dto.ToplamHak = defaultEntitlement;
+                dto.KalanGun = defaultEntitlement;
+            }
+
             resultList.Add(dto);
         }
 

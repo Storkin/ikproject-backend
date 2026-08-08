@@ -57,4 +57,8 @@ public class IzinTalepDto
     public string Durum { get; set; } = string.Empty;
     public DateTime TalepTarihi { get; set; }
     public string? Aciklama { get; set; }
+
+    // Talebi degerlendirirken kisinin guncel yillik izin durumu
+    public int ToplamHak { get; set; }
+    public int KalanGun { get; set; }
 }

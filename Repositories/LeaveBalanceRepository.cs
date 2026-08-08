@@ -21,6 +21,17 @@ public class LeaveBalanceRepository : ILeaveBalanceRepository
         return found;
     }
 
+    // Liste ekranlarinda her talep icin ayri sorgu atmamak adina
+    // ilgili yilin tum bakiyeleri tek seferde cekilir.
+    public async Task<List<IzinHakki>> GetByYearAsync(int year)
+    {
+        List<IzinHakki> found = await db.IzinHaklari
+            .Where(h => h.Yil == year)
+            .ToListAsync();
+
+        return found;
+    }
+
     public async Task<IzinHakki> GetLatestAsync(int personnelId)
     {
         IzinHakki found = await db.IzinHaklari
