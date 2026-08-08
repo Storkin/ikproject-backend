@@ -15,6 +15,20 @@ public class SalaryService : ISalaryService
         personnelRepo = personnelRepository;
     }
 
+    public async Task<List<MaasKaydiDto>> GetAllAsync()
+    {
+        List<MaasKaydi> found = await salaryRepo.GetAllAsync();
+
+        List<MaasKaydiDto> resultList = new List<MaasKaydiDto>();
+        foreach (MaasKaydi record in found)
+        {
+            MaasKaydiDto dto = MapToDto(record);
+            resultList.Add(dto);
+        }
+
+        return resultList;
+    }
+
     public async Task<List<MaasKaydiDto>> GetByPersonnelIdAsync(int personnelId)
     {
         List<MaasKaydi> found = await salaryRepo.GetByPersonnelIdAsync(personnelId);

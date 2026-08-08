@@ -54,6 +54,14 @@ public class EducationController : ControllerBase
         return NoContent();
     }
 
+    [HttpGet("getAllEducation")]
+    [Authorize(Roles = "IkYonetici,Admin")]
+    public async Task<IActionResult> GetAll()
+    {
+        List<EgitimDto> allRecords = await educationService.GetAllAsync();
+        return Ok(allRecords);
+    }
+
     [HttpGet("getByPersonnel/{personnelId}")]
     [Authorize(Roles = "IkYonetici,Admin")]
     public async Task<IActionResult> GetByPersonnel(int personnelId)

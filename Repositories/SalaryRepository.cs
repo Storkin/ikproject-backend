@@ -13,6 +13,16 @@ public class SalaryRepository : ISalaryRepository
         db = context;
     }
 
+    public async Task<List<MaasKaydi>> GetAllAsync()
+    {
+        List<MaasKaydi> found = await db.MaasKayitlari
+            .Include(m => m.Personel)
+            .OrderByDescending(m => m.GecerlilikTarihi)
+            .ToListAsync();
+
+        return found;
+    }
+
     public async Task<List<MaasKaydi>> GetByPersonnelIdAsync(int personnelId)
     {
         List<MaasKaydi> found = await db.MaasKayitlari

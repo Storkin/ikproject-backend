@@ -13,6 +13,16 @@ public class EducationRepository : IEducationRepository
         db = context;
     }
 
+    public async Task<List<Egitim>> GetAllAsync()
+    {
+        List<Egitim> found = await db.Egitimler
+            .Include(e => e.Personel)
+            .OrderByDescending(e => e.TamamlanmaTarihi)
+            .ToListAsync();
+
+        return found;
+    }
+
     public async Task<List<Egitim>> GetByPersonnelIdAsync(int personnelId)
     {
         List<Egitim> found = await db.Egitimler

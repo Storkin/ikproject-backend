@@ -42,6 +42,14 @@ public class SalaryController : ControllerBase
         return NoContent();
     }
 
+    [HttpGet("getAllSalaries")]
+    [Authorize(Roles = "IkYonetici,Admin")]
+    public async Task<IActionResult> GetAll()
+    {
+        List<MaasKaydiDto> allRecords = await salaryService.GetAllAsync();
+        return Ok(allRecords);
+    }
+
     [HttpGet("getByPersonnel/{personnelId}")]
     [Authorize(Roles = "IkYonetici,Admin")]
     public async Task<IActionResult> GetByPersonnel(int personnelId)

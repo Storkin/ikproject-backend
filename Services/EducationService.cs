@@ -15,6 +15,20 @@ public class EducationService : IEducationService
         personnelRepo = personnelRepository;
     }
 
+    public async Task<List<EgitimDto>> GetAllAsync()
+    {
+        List<Egitim> found = await educationRepo.GetAllAsync();
+
+        List<EgitimDto> resultList = new List<EgitimDto>();
+        foreach (Egitim record in found)
+        {
+            EgitimDto dto = MapToDto(record);
+            resultList.Add(dto);
+        }
+
+        return resultList;
+    }
+
     public async Task<List<EgitimDto>> GetByPersonnelIdAsync(int personnelId)
     {
         List<Egitim> found = await educationRepo.GetByPersonnelIdAsync(personnelId);
